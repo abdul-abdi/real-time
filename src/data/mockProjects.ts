@@ -66,5 +66,27 @@ export const mockProjects: Project[] = [
     lastUpdated: "4 days ago",
     recentTrend: "Consistently Green for past month",
     statusUpdate: "All milestones achieved ahead of schedule.",
+  },
+  {
+    id: "7",
+    code: "G-7",
+    name: "Project Eta",
+    owner: "Rachel",
+    ragStatus: "red",
+    dangerScore: 8,
+    lastUpdated: "1 hour ago",
+    recentTrend: "Urgent intervention needed",
+    statusUpdate: "Critical system failure. Emergency response team engaged.",
+  },
+  {
+    id: "8",
+    code: "H-8",
+    name: "Project Theta",
+    owner: "David",
+    ragStatus: "amber",
+    dangerScore: 5,
+    lastUpdated: "8 hours ago",
+    recentTrend: "Showing signs of improvement",
+    statusUpdate: "New mitigation strategies implemented. Monitoring progress.",
   }
 ];

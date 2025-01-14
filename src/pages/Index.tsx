@@ -4,6 +4,17 @@ import { FilterBar } from "@/components/FilterBar";
 import { ProjectCard } from "@/components/ProjectCard";
 import { mockProjects } from "@/data/mockProjects";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
+import { useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const Index = () => {
   const {
@@ -17,6 +28,30 @@ const Index = () => {
     setSortBy,
     filteredProjects,
   } = useProjectFilters(mockProjects);
+
+  const { toast } = useToast();
+
+  useEffect(() => {
+    toast({
+      title: "Dashboard Updated",
+      description: `Showing ${filteredProjects.length} projects`,
+    });
+  }, [filteredProjects.length, toast]);
+
+  // Mock data for the trend chart
+  const trendData = [
+    { name: "Week 1", red: 2, amber: 3, green: 3 },
+    { name: "Week 2", red: 1, amber: 4, green: 3 },
+    { name: "Week 3", red: 3, amber: 2, green: 3 },
+    { name: "Week 4", red: 2, amber: 3, green: 3 },
+  ];
+
+  const stats = {
+    total: mockProjects.length,
+    red: mockProjects.filter((p) => p.ragStatus === "red").length,
+    amber: mockProjects.filter((p) => p.ragStatus === "amber").length,
+    green: mockProjects.filter((p) => p.ragStatus === "green").length,
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
@@ -32,14 +67,74 @@ const Index = () => {
           sortBy={sortBy}
         />
         <div className="container py-8">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold tracking-tight animate-fade-in">
-              Project Overview
-            </h2>
-            <p className="text-muted-foreground mt-2 animate-fade-in">
-              Track and manage project health status across the organization
-            </p>
+          <div className="mb-8 space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight animate-fade-in">
+                Project Overview
+              </h2>
+              <p className="text-muted-foreground mt-2 animate-fade-in">
+                Track and manage project health status across the organization
+              </p>
+            </div>
+
+            {/* Stats Section */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in">
+              <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border">
+                <div className="text-sm text-muted-foreground">Total Projects</div>
+                <div className="text-2xl font-bold">{stats.total}</div>
+              </div>
+              <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-rag-red">
+                <div className="text-sm text-muted-foreground">Red Status</div>
+                <div className="text-2xl font-bold text-rag-red">{stats.red}</div>
+              </div>
+              <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-rag-amber">
+                <div className="text-sm text-muted-foreground">Amber Status</div>
+                <div className="text-2xl font-bold text-rag-amber">
+                  {stats.amber}
+                </div>
+              </div>
+              <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border border-rag-green">
+                <div className="text-sm text-muted-foreground">Green Status</div>
+                <div className="text-2xl font-bold text-rag-green">
+                  {stats.green}
+                </div>
+              </div>
+            </div>
+
+            {/* Trend Chart */}
+            <div className="bg-background/60 backdrop-blur-sm p-4 rounded-lg border animate-fade-in">
+              <h3 className="text-lg font-semibold mb-4">RAG Status Trend</h3>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="red"
+                      stroke="#FF4D4F"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="amber"
+                      stroke="#FAAD14"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="green"
+                      stroke="#52C41A"
+                      strokeWidth={2}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
+
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground animate-fade-in">
               No projects found matching your criteria
