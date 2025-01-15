@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { FilterBar } from "@/components/FilterBar";
 import { ProjectCard } from "@/components/ProjectCard";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { mockProjects } from "@/data/mockProjects";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
 import { useEffect } from "react";
