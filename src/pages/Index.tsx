@@ -67,6 +67,12 @@ const Index = () => {
           sortBy={sortBy}
         />
         <div className="container py-8">
+          <Breadcrumb
+            items={[
+              { label: "Projects", href: "/projects" },
+              { label: "Dashboard" },
+            ]}
+          />
           <div className="mb-8 space-y-8">
             <div>
               <h2 className="text-3xl font-bold tracking-tight animate-fade-in">
@@ -136,8 +142,15 @@ const Index = () => {
           </div>
 
           {filteredProjects.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground animate-fade-in">
-              No projects found matching your criteria
+            <div className="text-center py-12">
+              <div className="max-w-md mx-auto space-y-4">
+                <div className="text-6xl">🔍</div>
+                <h3 className="text-lg font-semibold">No projects found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search or filter criteria to find what you're
+                  looking for.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
