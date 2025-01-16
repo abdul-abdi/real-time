@@ -1,4 +1,4 @@
-import { LayoutDashboard, PieChart, Settings, Users, Plus, FolderPlus } from "lucide-react";
+import { LayoutDashboard, Users, PieChart, Settings, Plus, FolderPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -12,10 +12,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { mockProjects } from "@/data/mockProjects";
+
+interface SidebarProps {
+  onSectionChange: (section: "dashboard" | "people" | "analytics" | "settings") => void;
+  activeSection: string;
+}
 
 interface CustomView {
   id: string;
@@ -24,45 +28,42 @@ interface CustomView {
   projects: string[];
 }
 
-export const Sidebar = () => {
+export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
   const [customViews, setCustomViews] = useState<CustomView[]>([]);
   const [newViewName, setNewViewName] = useState("");
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState("Dashboard");
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const defaultItems = [
     {
       icon: LayoutDashboard,
       label: "Dashboard",
-      path: "/",
+      section: "dashboard" as const,
       description: "Overview of all projects and their status",
     },
     {
       icon: Users,
-      label: "Teams",
-      path: "/teams",
-      description: "View and manage team assignments",
+      label: "People",
+      section: "people" as const,
+      description: "View project managers and their projects",
     },
     {
       icon: PieChart,
       label: "Analytics",
-      path: "/analytics",
+      section: "analytics" as const,
       description: "Project analytics and insights",
     },
     {
       icon: Settings,
       label: "Settings",
-      path: "/settings",
+      section: "settings" as const,
       description: "System and user preferences",
     },
   ];
 
-  const handleItemClick = (label: string, path: string, description: string) => {
-    setActiveItem(label);
-    navigate(path);
+  const handleItemClick = (section: "dashboard" | "people" | "analytics" | "settings", label: string, description: string) => {
+    onSectionChange(section);
     toast({
       title: label,
       description: description,
@@ -119,13 +120,13 @@ export const Sidebar = () => {
             <Tooltip key={item.label}>
               <TooltipTrigger asChild>
                 <Button
-                  variant={activeItem === item.label ? "default" : "ghost"}
+                  variant={activeSection === item.section ? "default" : "ghost"}
                   size="icon"
                   className={cn(
                     "h-10 w-10 transition-all hover:bg-muted",
-                    activeItem === item.label && "bg-primary text-primary-foreground"
+                    activeSection === item.section && "bg-primary text-primary-foreground"
                   )}
-                  onClick={() => handleItemClick(item.label, item.path, item.description)}
+                  onClick={() => handleItemClick(item.section, item.label, item.description)}
                 >
                   <item.icon className="h-5 w-5" />
                 </Button>
