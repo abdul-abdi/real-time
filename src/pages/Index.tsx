@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PeopleSection } from "@/components/sections/PeopleSection";
 import { AnalyticsSection } from "@/components/sections/AnalyticsSection";
 import { SettingsSection } from "@/components/sections/SettingsSection";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
@@ -26,6 +27,15 @@ const Index = () => {
   } = useProjectFilters(mockProjects);
 
   const { toast } = useToast();
+
+  // Define the trend data
+  const trendData = [
+    { name: "Jan", red: 2, amber: 3, green: 5 },
+    { name: "Feb", red: 3, amber: 4, green: 3 },
+    { name: "Mar", red: 1, amber: 5, green: 4 },
+    { name: "Apr", red: 4, amber: 2, green: 4 },
+    { name: "May", red: 2, amber: 3, green: 5 },
+  ];
 
   useEffect(() => {
     if (activeSection === "dashboard") {
