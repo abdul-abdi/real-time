@@ -14,16 +14,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { mockProjects } from "@/data/mockProjects";
 
 interface CustomView {
   id: string;
   label: string;
   active?: boolean;
+  projects: string[];
 }
 
 export const Sidebar = () => {
   const [customViews, setCustomViews] = useState<CustomView[]>([]);
   const [newViewName, setNewViewName] = useState("");
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Dashboard");
   const { toast } = useToast();
@@ -34,45 +38,57 @@ export const Sidebar = () => {
       icon: LayoutDashboard,
       label: "Dashboard",
       path: "/",
+      description: "Overview of all projects and their status",
     },
     {
       icon: Users,
       label: "Teams",
       path: "/teams",
+      description: "View and manage team assignments",
     },
     {
       icon: PieChart,
       label: "Analytics",
       path: "/analytics",
+      description: "Project analytics and insights",
     },
     {
       icon: Settings,
       label: "Settings",
       path: "/settings",
+      description: "System and user preferences",
     },
   ];
 
-  const handleItemClick = (label: string, path: string) => {
+  const handleItemClick = (label: string, path: string, description: string) => {
     setActiveItem(label);
     navigate(path);
     toast({
-      title: "Navigation",
-      description: `Navigated to ${label}`,
+      title: label,
+      description: description,
     });
   };
 
   const handleCreateView = () => {
-    if (newViewName.trim()) {
+    if (newViewName.trim() && selectedProjects.length > 0) {
       const newView = {
         id: Date.now().toString(),
         label: newViewName.trim(),
+        projects: selectedProjects,
       };
       setCustomViews([...customViews, newView]);
       setNewViewName("");
+      setSelectedProjects([]);
       setIsDialogOpen(false);
       toast({
-        title: "View Created",
-        description: `New view "${newViewName}" has been created successfully.`,
+        title: "Custom View Created",
+        description: `Created "${newViewName}" with ${selectedProjects.length} projects`,
+      });
+    } else {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter a view name and select at least one project",
+        variant: "destructive",
       });
     }
   };
@@ -83,9 +99,15 @@ export const Sidebar = () => {
       active: v.id === view.id,
     }));
     setCustomViews(updatedViews);
+    
+    const projectNames = view.projects
+      .map(id => mockProjects.find(p => p.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+    
     toast({
-      title: "Custom View",
-      description: `Switched to ${view.label} view`,
+      title: view.label,
+      description: `Viewing ${view.projects.length} projects: ${projectNames}`,
     });
   };
 
@@ -103,7 +125,7 @@ export const Sidebar = () => {
                     "h-10 w-10 transition-all hover:bg-muted",
                     activeItem === item.label && "bg-primary text-primary-foreground"
                   )}
-                  onClick={() => handleItemClick(item.label, item.path)}
+                  onClick={() => handleItemClick(item.label, item.path, item.description)}
                 >
                   <item.icon className="h-5 w-5" />
                 </Button>
@@ -129,7 +151,7 @@ export const Sidebar = () => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>{view.label}</p>
+                <p>{view.label} ({view.projects.length} projects)</p>
               </TooltipContent>
             </Tooltip>
           ))}
@@ -146,9 +168,9 @@ export const Sidebar = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create New View</DialogTitle>
+                <DialogTitle>Create Custom View</DialogTitle>
                 <DialogDescription>
-                  Create a custom view to organize your projects
+                  Create a custom view and select projects to include
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
@@ -158,16 +180,34 @@ export const Sidebar = () => {
                     value={newViewName}
                     onChange={(e) => setNewViewName(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === 'Enter' && newViewName.trim()) {
                         handleCreateView();
                       }
                     }}
                   />
                 </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Select Projects</label>
+                  <Select
+                    value={selectedProjects.join(",")}
+                    onValueChange={(value) => setSelectedProjects(value.split(",").filter(Boolean))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select projects to include" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockProjects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button
                   onClick={handleCreateView}
                   className="w-full"
-                  disabled={!newViewName.trim()}
+                  disabled={!newViewName.trim() || selectedProjects.length === 0}
                 >
                   Create View
                 </Button>
