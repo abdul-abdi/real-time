@@ -15,6 +15,13 @@ export interface Project {
   statusUpdate: string;
   team?: string;
   manager?: string;
+  context?: string;
+  group?: string;
+  healthMetrics?: {
+    performance: number;
+    quality: number;
+    schedule: number;
+  };
 }
 
 export interface StatusUpdate {
@@ -24,6 +31,7 @@ export interface StatusUpdate {
   ragStatus: RAGStatus;
   notes: string;
   reportedBy: string;
+  context?: string;
 }
 
 export interface ProjectStatus {
@@ -45,4 +53,27 @@ export interface ProjectsState {
   projects: Project[];
   loading: boolean;
   error: string | null;
+}
+
+export interface DateRange {
+  start: Date;
+  end: Date;
+}
+
+export interface DashboardMetrics {
+  totalProjects: number;
+  criticalIssues: number;
+  healthyProjects: number;
+  statusDistribution: {
+    red: number;
+    amber: number;
+    green: number;
+  };
+}
+
+export interface ProjectFilters {
+  group: string[];
+  status: RAGStatus[];
+  timeRange: DateRange;
+  search: string;
 }

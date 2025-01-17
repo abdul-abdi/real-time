@@ -23,7 +23,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Card className="group relative overflow-hidden transition-all hover:shadow-lg">
+    <Card className="group relative overflow-hidden transition-all hover:shadow-lg rounded-2xl hover:scale-[1.02] duration-200">
       <RAGStatusIndicator status={project.ragStatus} />
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
@@ -34,7 +34,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           <Badge
             variant="outline"
             className={cn(
-              "capitalize shrink-0",
+              "capitalize shrink-0 transition-colors",
               project.ragStatus === "red" && "border-rag-red text-rag-red",
               project.ragStatus === "amber" && "border-rag-amber text-rag-amber",
               project.ragStatus === "green" && "border-rag-green text-rag-green"
@@ -49,7 +49,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           <ProjectMetadata project={project} />
           <Button
             variant="ghost"
-            className="w-full justify-between group-hover:bg-primary group-hover:text-primary-foreground"
+            className="w-full justify-between group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
             onClick={() => setIsOpen(true)}
           >
             View Details
