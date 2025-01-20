@@ -2,7 +2,7 @@ import { LayoutDashboard, Users, PieChart, Settings, Plus, FolderPlus } from "lu
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,19 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  // Load custom views from localStorage on mount
+  useEffect(() => {
+    const savedViews = localStorage.getItem('customViews');
+    if (savedViews) {
+      setCustomViews(JSON.parse(savedViews));
+    }
+  }, []);
+
+  // Save custom views to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('customViews', JSON.stringify(customViews));
+  }, [customViews]);
 
   const defaultItems = [
     {

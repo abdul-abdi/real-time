@@ -23,20 +23,56 @@ export const ProjectDetailsDialog = ({
   isOpen,
   onOpenChange,
 }: ProjectDetailsDialogProps) => {
-  // Mock weekly updates - in a real app, this would come from the API
+  // Enhanced weekly updates with more detailed information
   const weeklyUpdates = [
-    { week: "Week 4", update: "Completed milestone 3, on track for delivery", status: "green" },
-    { week: "Week 3", update: "Minor delays in testing phase", status: "amber" },
-    { week: "Week 2", update: "Resource constraints identified", status: "amber" },
-    { week: "Week 1", update: "Project kickoff successful", status: "green" },
+    { 
+      week: "Week 4", 
+      update: "Completed milestone 3, on track for delivery",
+      status: "green",
+      metrics: {
+        completedTasks: 12,
+        pendingTasks: 3,
+        blockers: 0
+      }
+    },
+    { 
+      week: "Week 3", 
+      update: "Minor delays in testing phase",
+      status: "amber",
+      metrics: {
+        completedTasks: 8,
+        pendingTasks: 7,
+        blockers: 2
+      }
+    },
+    { 
+      week: "Week 2", 
+      update: "Resource constraints identified",
+      status: "amber",
+      metrics: {
+        completedTasks: 5,
+        pendingTasks: 10,
+        blockers: 3
+      }
+    },
+    { 
+      week: "Week 1", 
+      update: "Project kickoff successful",
+      status: "green",
+      metrics: {
+        completedTasks: 3,
+        pendingTasks: 15,
+        blockers: 0
+      }
+    },
   ];
 
-  // Mock data for the trend chart
+  // Enhanced trend data with more metrics
   const trendData = [
-    { week: "Week 1", score: 3 },
-    { week: "Week 2", score: 5 },
-    { week: "Week 3", score: 7 },
-    { week: "Week 4", score: project.dangerScore },
+    { week: "Week 1", score: 3, completion: 10, risks: 1 },
+    { week: "Week 2", score: 5, completion: 25, risks: 2 },
+    { week: "Week 3", score: 7, completion: 45, risks: 3 },
+    { week: "Week 4", score: project.dangerScore, completion: 65, risks: 2 },
   ];
 
   return (
@@ -58,11 +94,9 @@ export const ProjectDetailsDialog = ({
         </DialogHeader>
         
         <Tabs defaultValue="overview" className="flex-1 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="updates">Updates</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="updates">Weekly Updates</TabsTrigger>
           </TabsList>
           
           <ScrollArea className="flex-1 h-[calc(90vh-200px)]">
@@ -100,6 +134,12 @@ export const ProjectDetailsDialog = ({
                         stroke="#888"
                         strokeWidth={2}
                       />
+                      <Line
+                        type="monotone"
+                        dataKey="completion"
+                        stroke="#4CAF50"
+                        strokeWidth={2}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -130,21 +170,23 @@ export const ProjectDetailsDialog = ({
                       {update.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{update.update}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{update.update}</p>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Completed:</span>
+                      <span className="ml-1 font-medium">{update.metrics.completedTasks}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Pending:</span>
+                      <span className="ml-1 font-medium">{update.metrics.pendingTasks}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Blockers:</span>
+                      <span className="ml-1 font-medium">{update.metrics.blockers}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
-            </TabsContent>
-
-            <TabsContent value="history" className="p-4">
-              <p className="text-sm text-muted-foreground">
-                Project history will be displayed here.
-              </p>
-            </TabsContent>
-
-            <TabsContent value="documents" className="p-4">
-              <p className="text-sm text-muted-foreground">
-                Project documents will be displayed here.
-              </p>
             </TabsContent>
           </ScrollArea>
         </Tabs>
