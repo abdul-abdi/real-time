@@ -1,16 +1,19 @@
 import { mockProjects } from "@/data/mockProjects";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Project } from "@/types/project";
 
 export const PeopleSection = () => {
-  // Group projects by owner
+  // Create a map of all unique owners and their projects
   const projectsByOwner = mockProjects.reduce((acc, project) => {
-    if (!acc[project.owner]) {
-      acc[project.owner] = [];
-    }
-    acc[project.owner].push(project);
+    project.owners.forEach(owner => {
+      if (!acc[owner]) {
+        acc[owner] = [];
+      }
+      acc[owner].push(project);
+    });
     return acc;
-  }, {} as Record<string, typeof mockProjects>);
+  }, {} as Record<string, Project[]>);
 
   return (
     <div className="container py-8 space-y-6">
