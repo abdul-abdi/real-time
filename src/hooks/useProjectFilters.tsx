@@ -6,6 +6,7 @@ export const useProjectFilters = (projects: Project[]) => {
   const [ragFilter, setRagFilter] = useState<string>("all");
   const [timePeriod, setTimePeriod] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("updated");
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
 
   const filteredProjects = useMemo(() => {
     return projects
@@ -13,9 +14,15 @@ export const useProjectFilters = (projects: Project[]) => {
         const matchesSearch =
           project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           project.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          project.owner.toLowerCase().includes(searchQuery.toLowerCase());
+          project.owners.some(owner => 
+            owner.toLowerCase().includes(searchQuery.toLowerCase())
+          );
 
         const matchesRag = ragFilter === "all" || project.ragStatus === ragFilter;
+
+        const matchesDepartments = 
+          selectedDepartments.length === 0 || 
+          project.departments.some(dept => selectedDepartments.includes(dept));
 
         // Time period filtering logic
         const lastUpdatedDate = new Date(project.lastUpdated);
@@ -42,7 +49,7 @@ export const useProjectFilters = (projects: Project[]) => {
             matchesTime = true;
         }
 
-        return matchesSearch && matchesRag && matchesTime;
+        return matchesSearch && matchesRag && matchesTime && matchesDepartments;
       })
       .sort((a, b) => {
         switch (sortBy) {
@@ -56,7 +63,7 @@ export const useProjectFilters = (projects: Project[]) => {
             return 0;
         }
       });
-  }, [projects, searchQuery, ragFilter, timePeriod, sortBy]);
+  }, [projects, searchQuery, ragFilter, timePeriod, sortBy, selectedDepartments]);
 
   return {
     searchQuery,
@@ -67,6 +74,8 @@ export const useProjectFilters = (projects: Project[]) => {
     setTimePeriod,
     sortBy,
     setSortBy,
+    selectedDepartments,
+    setSelectedDepartments,
     filteredProjects,
   };
 };

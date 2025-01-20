@@ -34,6 +34,24 @@ export const ProjectMetadata = ({ project }: ProjectMetadataProps) => {
           <Clock className="h-4 w-4" />
           <span>Updated {getStatusDuration(project.lastUpdated)}</span>
         </div>
+        <div className="flex gap-2">
+          {project.departments.map((dept) => (
+            <Badge
+              key={dept}
+              variant="outline"
+              className="bg-primary/10"
+            >
+              {dept}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <span>{project.owners.join(", ")}</span>
+        </div>
         <Tooltip>
           <TooltipTrigger>
             <Badge
@@ -54,25 +72,12 @@ export const ProjectMetadata = ({ project }: ProjectMetadataProps) => {
         </Tooltip>
       </div>
 
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <span>{project.team || project.owner}</span>
+      {project.dangerScore >= 7 && (
+        <div className="flex items-center gap-1 text-rag-red text-sm">
+          <AlertTriangle className="h-4 w-4" />
+          <span>High Risk Project</span>
         </div>
-        {project.dangerScore >= 7 && (
-          <Tooltip>
-            <TooltipTrigger>
-              <div className="flex items-center gap-1 text-rag-red">
-                <AlertTriangle className="h-4 w-4" />
-                <span>High Risk</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>This project requires immediate attention</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-      </div>
+      )}
 
       <div className="text-sm text-muted-foreground">
         <p className="line-clamp-2">{project.statusUpdate}</p>

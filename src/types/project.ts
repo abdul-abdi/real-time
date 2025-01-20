@@ -1,11 +1,14 @@
 export type RAGStatus = "red" | "amber" | "green";
 
+export type Department = "Engineering" | "Marketing" | "Sales" | "Finance" | "Operations" | "HR";
+
 export interface Project {
   id: string;
   code: string;
   name: string;
   description?: string;
-  owner: string;
+  owners: string[];  // Changed from single owner to multiple
+  departments: Department[];  // Added departments
   startDate?: string;
   endDate?: string;
   ragStatus: RAGStatus;
@@ -14,7 +17,6 @@ export interface Project {
   recentTrend: string;
   statusUpdate: string;
   team?: string;
-  manager?: string;
   context?: string;
   group?: string;
   healthMetrics?: {

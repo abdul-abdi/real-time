@@ -1,11 +1,12 @@
-import { Project } from "@/types/project";
+import { Project, Department } from "@/types/project";
 
 export const mockProjects: Project[] = [
   {
     id: "1",
     code: "A-1",
     name: "Project Alpha",
-    owner: "Jade",
+    owners: ["Jade", "Mike"],
+    departments: ["Engineering", "Operations"],
     ragStatus: "green",
     dangerScore: 3,
     lastUpdated: "2 days ago",
@@ -16,7 +17,8 @@ export const mockProjects: Project[] = [
     id: "2",
     code: "B-2",
     name: "Project Beta",
-    owner: "Alex",
+    owners: ["Alex", "Sarah"],
+    departments: ["Marketing", "Sales"],
     ragStatus: "amber",
     dangerScore: 7,
     lastUpdated: "1 day ago",
@@ -27,7 +29,8 @@ export const mockProjects: Project[] = [
     id: "3",
     code: "C-3",
     name: "Project Gamma",
-    owner: "Sarah",
+    owners: ["Sarah", "Tom"],
+    departments: ["Engineering", "Finance"],
     ragStatus: "red",
     dangerScore: 9,
     lastUpdated: "3 hours ago",
@@ -38,7 +41,8 @@ export const mockProjects: Project[] = [
     id: "4",
     code: "D-4",
     name: "Project Delta",
-    owner: "Mike",
+    owners: ["Mike"],
+    departments: ["Operations"],
     ragStatus: "green",
     dangerScore: 2,
     lastUpdated: "5 days ago",
@@ -49,7 +53,8 @@ export const mockProjects: Project[] = [
     id: "5",
     code: "E-5",
     name: "Project Epsilon",
-    owner: "Lisa",
+    owners: ["Lisa", "Jade"],
+    departments: ["Marketing", "Sales"],
     ragStatus: "amber",
     dangerScore: 6,
     lastUpdated: "12 hours ago",
@@ -60,7 +65,8 @@ export const mockProjects: Project[] = [
     id: "6",
     code: "F-6",
     name: "Project Zeta",
-    owner: "Tom",
+    owners: ["Tom"],
+    departments: ["Engineering"],
     ragStatus: "green",
     dangerScore: 4,
     lastUpdated: "4 days ago",
@@ -71,7 +77,8 @@ export const mockProjects: Project[] = [
     id: "7",
     code: "G-7",
     name: "Project Eta",
-    owner: "Rachel",
+    owners: ["Rachel"],
+    departments: ["HR"],
     ragStatus: "red",
     dangerScore: 8,
     lastUpdated: "1 hour ago",
@@ -82,11 +89,21 @@ export const mockProjects: Project[] = [
     id: "8",
     code: "H-8",
     name: "Project Theta",
-    owner: "David",
+    owners: ["David", "Lisa"],
+    departments: ["Finance", "Sales"],
     ragStatus: "amber",
     dangerScore: 5,
     lastUpdated: "8 hours ago",
     recentTrend: "Showing signs of improvement",
     statusUpdate: "New mitigation strategies implemented. Monitoring progress.",
   }
+];
+
+export const departments: Department[] = [
+  "Engineering",
+  "Marketing",
+  "Sales",
+  "Finance",
+  "Operations",
+  "HR"
 ];

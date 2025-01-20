@@ -24,6 +24,8 @@ const Index = () => {
     setTimePeriod,
     sortBy,
     setSortBy,
+    selectedDepartments,
+    setSelectedDepartments,
     filteredProjects,
   } = useProjectFilters(mockProjects);
 
@@ -61,9 +63,11 @@ const Index = () => {
               onRagFilterChange={setRagFilter}
               onTimePeriodChange={setTimePeriod}
               onSortByChange={setSortBy}
+              onDepartmentsChange={setSelectedDepartments}
               ragFilter={ragFilter}
               timePeriod={timePeriod}
               sortBy={sortBy}
+              selectedDepartments={selectedDepartments}
             />
             <div className="container py-8">
               <Breadcrumb
