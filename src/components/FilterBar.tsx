@@ -9,7 +9,14 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { departments } from "@/data/mockProjects";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface FilterBarProps {
   onRagFilterChange: (value: string) => void;
@@ -43,29 +50,33 @@ export const FilterBar = ({
   };
 
   return (
-    <div className="sticky top-16 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex flex-wrap items-center gap-4 py-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {departments.map((department) => (
-            <Button
-              key={department}
-              variant={selectedDepartments.includes(department) ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleDepartmentToggle(department)}
-              className="hover:bg-muted transition-colors"
-            >
-              <Checkbox
-                checked={selectedDepartments.includes(department)}
-                className="mr-2 h-4 w-4"
-              />
-              {department}
+    <div className="sticky top-16 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <Filter className="mr-2 h-4 w-4" />
+              Departments ({selectedDepartments.length})
             </Button>
-          ))}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>Select Departments</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {departments.map((department) => (
+              <DropdownMenuCheckboxItem
+                key={department}
+                checked={selectedDepartments.includes(department)}
+                onCheckedChange={() => handleDepartmentToggle(department)}
+              >
+                {department}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-        <div className="flex flex-wrap items-center gap-4 ml-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto sm:ml-auto">
           <Select value={ragFilter} onValueChange={onRagFilterChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="RAG Status" />
             </SelectTrigger>
             <SelectContent>
@@ -77,7 +88,7 @@ export const FilterBar = ({
           </Select>
 
           <Select value={timePeriod} onValueChange={onTimePeriodChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Time Period" />
             </SelectTrigger>
             <SelectContent>
@@ -90,7 +101,7 @@ export const FilterBar = ({
           </Select>
 
           <Select value={sortBy} onValueChange={onSortByChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Sort By" />
             </SelectTrigger>
             <SelectContent>

@@ -48,8 +48,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         <div className="space-y-4">
           <ProjectMetadata project={project} />
           <Button
-            variant="ghost"
-            className="w-full justify-between group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+            className="w-full justify-between bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setIsOpen(true)}
           >
             View Details
