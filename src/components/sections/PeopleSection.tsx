@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ChartBar, Users, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export const PeopleSection = () => {
   const projectsByOwner = mockProjects.reduce((acc, project) => {
@@ -121,12 +122,10 @@ export const PeopleSection = () => {
                                     "h-2",
                                     project.dangerScore >= 7 ? "bg-rag-red/20" :
                                     project.dangerScore >= 4 ? "bg-rag-amber/20" :
-                                    "bg-rag-green/20"
-                                  )}
-                                  indicatorClassName={cn(
-                                    project.dangerScore >= 7 ? "bg-rag-red" :
-                                    project.dangerScore >= 4 ? "bg-rag-amber" :
-                                    "bg-rag-green"
+                                    "bg-rag-green/20",
+                                    project.dangerScore >= 7 ? "[&>div]:bg-rag-red" :
+                                    project.dangerScore >= 4 ? "[&>div]:bg-rag-amber" :
+                                    "[&>div]:bg-rag-green"
                                   )}
                                 />
                               </div>
