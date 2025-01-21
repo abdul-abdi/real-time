@@ -15,8 +15,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { mockProjects } from "@/data/mockProjects";
+import { CustomView } from "@/types/customView";
 
-// Available icons for custom views
 const viewIcons = {
   view: View,
   grid: LayoutGrid,
@@ -32,17 +32,10 @@ const viewIcons = {
 interface SidebarProps {
   onSectionChange: (section: "dashboard" | "people" | "analytics" | "settings") => void;
   activeSection: string;
+  onViewChange: (view: CustomView | null) => void;
 }
 
-interface CustomView {
-  id: string;
-  label: string;
-  icon: keyof typeof viewIcons;
-  active?: boolean;
-  projects: string[];
-}
-
-export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
+export const Sidebar = ({ onSectionChange, activeSection, onViewChange }: SidebarProps) => {
   const [customViews, setCustomViews] = useState<CustomView[]>([]);
   const [newViewName, setNewViewName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState<keyof typeof viewIcons>("view");
@@ -115,21 +108,17 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
   };
 
   const handleCustomViewClick = (view: CustomView) => {
+    onViewChange(view);
     const updatedViews = customViews.map((v) => ({
       ...v,
       active: v.id === view.id,
     }));
     setCustomViews(updatedViews);
-    
-    const projectNames = view.projects
-      .map(id => mockProjects.find(p => p.id === id)?.name)
-      .filter(Boolean)
-      .join(", ");
-    
-    toast({
-      title: view.label,
-      description: `Viewing ${view.projects.length} projects: ${projectNames}`,
-    });
+  };
+
+  const handleDefaultItemClick = (section: "dashboard" | "people" | "analytics" | "settings") => {
+    onSectionChange(section);
+    onViewChange(null);
   };
 
   return (
@@ -146,7 +135,7 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
                     "h-10 w-10 transition-all hover:bg-muted",
                     activeSection === item.section && "bg-primary text-primary-foreground"
                   )}
-                  onClick={() => onSectionChange(item.section)}
+                  onClick={() => handleDefaultItemClick(item.section)}
                 >
                   <item.icon className="h-5 w-5" />
                 </Button>
@@ -160,7 +149,7 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
           <div className="my-2 h-px w-10 bg-border" />
 
           {customViews.map((view) => {
-            const IconComponent = viewIcons[view.icon];
+            const IconComponent = viewIcons[view.icon as keyof typeof viewIcons];
             return (
               <Tooltip key={view.id}>
                 <TooltipTrigger asChild>

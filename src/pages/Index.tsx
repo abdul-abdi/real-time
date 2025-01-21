@@ -12,9 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { PeopleSection } from "@/components/sections/PeopleSection";
 import { AnalyticsSection } from "@/components/sections/AnalyticsSection";
 import { SettingsSection } from "@/components/sections/SettingsSection";
+import { CustomViewSection } from "@/components/sections/CustomViewSection";
+import { CustomView } from "@/types/customView";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
+  const [activeView, setActiveView] = useState<CustomView | null>(null);
   const {
     searchQuery,
     setSearchQuery,
@@ -31,7 +34,6 @@ const Index = () => {
 
   const { toast } = useToast();
 
-  // Calculate dashboard metrics
   const metrics = {
     totalProjects: mockProjects.length,
     criticalIssues: mockProjects.filter(p => p.ragStatus === "red").length,
@@ -52,12 +54,26 @@ const Index = () => {
     }
   }, [filteredProjects.length, toast, activeSection]);
 
+  const handleViewChange = (view: CustomView | null) => {
+    setActiveView(view);
+    if (view) {
+      toast({
+        title: `View: ${view.label}`,
+        description: `Showing ${view.projects.length} projects`,
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Header onSearch={setSearchQuery} searchQuery={searchQuery} />
-      <Sidebar onSectionChange={setActiveSection} activeSection={activeSection} />
+      <Sidebar 
+        onSectionChange={setActiveSection} 
+        activeSection={activeSection}
+        onViewChange={handleViewChange}
+      />
       <main className="pl-16 pt-16 min-h-screen">
-        {activeSection === "dashboard" && (
+        {activeSection === "dashboard" && !activeView && (
           <>
             <FilterBar
               onRagFilterChange={setRagFilter}
@@ -107,6 +123,7 @@ const Index = () => {
           </>
         )}
         
+        {activeView && <CustomViewSection view={activeView} />}
         {activeSection === "people" && <PeopleSection />}
         {activeSection === "analytics" && <AnalyticsSection />}
         {activeSection === "settings" && <SettingsSection />}
