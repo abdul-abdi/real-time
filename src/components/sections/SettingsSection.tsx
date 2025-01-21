@@ -10,17 +10,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export const SettingsSection = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [slackNotifications, setSlackNotifications] = useState(true);
   const [riskThreshold, setRiskThreshold] = useState("7");
   const [updateFrequency, setUpdateFrequency] = useState("daily");
+  const [defaultView, setDefaultView] = useState("grid");
+  const [itemsPerPage, setItemsPerPage] = useState("12");
   const { toast } = useToast();
 
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('displaySettings');
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      setDefaultView(settings.defaultView || "grid");
+      setItemsPerPage(settings.itemsPerPage || "12");
+      setEmailNotifications(settings.emailNotifications ?? true);
+      setSlackNotifications(settings.slackNotifications ?? true);
+      setRiskThreshold(settings.riskThreshold || "7");
+      setUpdateFrequency(settings.updateFrequency || "daily");
+    }
+  }, []);
+
   const handleSave = () => {
+    const settings = {
+      defaultView,
+      itemsPerPage,
+      emailNotifications,
+      slackNotifications,
+      riskThreshold,
+      updateFrequency,
+    };
+    localStorage.setItem('displaySettings', JSON.stringify(settings));
+    
     toast({
       title: "Settings saved",
       description: "Your preferences have been updated successfully.",
@@ -117,7 +143,7 @@ export const SettingsSection = () => {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Default View</Label>
-              <Select defaultValue="grid">
+              <Select value={defaultView} onValueChange={setDefaultView}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select view" />
                 </SelectTrigger>
@@ -131,7 +157,7 @@ export const SettingsSection = () => {
 
             <div className="space-y-2">
               <Label>Items Per Page</Label>
-              <Select defaultValue="12">
+              <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select number" />
                 </SelectTrigger>

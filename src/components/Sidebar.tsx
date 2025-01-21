@@ -217,21 +217,28 @@ export const Sidebar = ({ onSectionChange, activeSection, onViewChange }: Sideba
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground">Select Projects</label>
-                  <Select
-                    value={selectedProjects.join(",")}
-                    onValueChange={(value) => setSelectedProjects(value.split(",").filter(Boolean))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select projects to include" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {mockProjects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
+                  <div className="max-h-[200px] overflow-y-auto border rounded-md p-2">
+                    {mockProjects.map((project) => (
+                      <div key={project.id} className="flex items-center space-x-2 py-1">
+                        <input
+                          type="checkbox"
+                          id={`project-${project.id}`}
+                          checked={selectedProjects.includes(project.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedProjects([...selectedProjects, project.id]);
+                            } else {
+                              setSelectedProjects(selectedProjects.filter(id => id !== project.id));
+                            }
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <label htmlFor={`project-${project.id}`} className="text-sm">
                           {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <Button
                   onClick={handleCreateView}
