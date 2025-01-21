@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, PieChart, Settings, Plus, FolderPlus } from "lucide-react";
+import { LayoutDashboard, Users, PieChart, Settings, Plus, View, LayoutGrid, LayoutList, ChartBar, ChartPie, ChartLine, FileText, Folder, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,6 +16,19 @@ import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { mockProjects } from "@/data/mockProjects";
 
+// Available icons for custom views
+const viewIcons = {
+  view: View,
+  grid: LayoutGrid,
+  list: LayoutList,
+  bar: ChartBar,
+  pie: ChartPie,
+  line: ChartLine,
+  file: FileText,
+  folder: Folder,
+  database: Database,
+};
+
 interface SidebarProps {
   onSectionChange: (section: "dashboard" | "people" | "analytics" | "settings") => void;
   activeSection: string;
@@ -24,6 +37,7 @@ interface SidebarProps {
 interface CustomView {
   id: string;
   label: string;
+  icon: keyof typeof viewIcons;
   active?: boolean;
   projects: string[];
 }
@@ -31,11 +45,11 @@ interface CustomView {
 export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
   const [customViews, setCustomViews] = useState<CustomView[]>([]);
   const [newViewName, setNewViewName] = useState("");
+  const [selectedIcon, setSelectedIcon] = useState<keyof typeof viewIcons>("view");
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  // Load custom views from localStorage on mount
   useEffect(() => {
     const savedViews = localStorage.getItem('customViews');
     if (savedViews) {
@@ -43,7 +57,6 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
     }
   }, []);
 
-  // Save custom views to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('customViews', JSON.stringify(customViews));
   }, [customViews]);
@@ -75,23 +88,17 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
     },
   ];
 
-  const handleItemClick = (section: "dashboard" | "people" | "analytics" | "settings", label: string, description: string) => {
-    onSectionChange(section);
-    toast({
-      title: label,
-      description: description,
-    });
-  };
-
   const handleCreateView = () => {
     if (newViewName.trim() && selectedProjects.length > 0) {
       const newView = {
         id: Date.now().toString(),
         label: newViewName.trim(),
+        icon: selectedIcon,
         projects: selectedProjects,
       };
       setCustomViews([...customViews, newView]);
       setNewViewName("");
+      setSelectedIcon("view");
       setSelectedProjects([]);
       setIsDialogOpen(false);
       toast({
@@ -139,7 +146,7 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
                     "h-10 w-10 transition-all hover:bg-muted",
                     activeSection === item.section && "bg-primary text-primary-foreground"
                   )}
-                  onClick={() => handleItemClick(item.section, item.label, item.description)}
+                  onClick={() => onSectionChange(item.section)}
                 >
                   <item.icon className="h-5 w-5" />
                 </Button>
@@ -152,23 +159,26 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
 
           <div className="my-2 h-px w-10 bg-border" />
 
-          {customViews.map((view) => (
-            <Tooltip key={view.id}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={view.active ? "default" : "ghost"}
-                  size="icon"
-                  className="h-10 w-10 transition-all hover:bg-muted"
-                  onClick={() => handleCustomViewClick(view)}
-                >
-                  <FolderPlus className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>{view.label} ({view.projects.length} projects)</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+          {customViews.map((view) => {
+            const IconComponent = viewIcons[view.icon];
+            return (
+              <Tooltip key={view.id}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={view.active ? "default" : "ghost"}
+                    size="icon"
+                    className="h-10 w-10 transition-all hover:bg-muted"
+                    onClick={() => handleCustomViewClick(view)}
+                  >
+                    <IconComponent className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{view.label} ({view.projects.length} projects)</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -180,7 +190,7 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
                 <Plus className="h-5 w-5" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Create Custom View</DialogTitle>
                 <DialogDescription>
@@ -193,12 +203,28 @@ export const Sidebar = ({ onSectionChange, activeSection }: SidebarProps) => {
                     placeholder="Enter view name"
                     value={newViewName}
                     onChange={(e) => setNewViewName(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && newViewName.trim()) {
-                        handleCreateView();
-                      }
-                    }}
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground">Select Icon</label>
+                  <Select
+                    value={selectedIcon}
+                    onValueChange={(value: keyof typeof viewIcons) => setSelectedIcon(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose an icon" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(viewIcons).map(([key, Icon]) => (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            <span className="capitalize">{key}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground">Select Projects</label>

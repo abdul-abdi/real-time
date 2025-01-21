@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Project } from "@/types/project";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ChartBar, Users } from "lucide-react";
+import { ChartBar, Users, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const PeopleSection = () => {
@@ -23,12 +23,14 @@ export const PeopleSection = () => {
     const criticalProjects = projects.filter(p => p.ragStatus === 'red').length;
     const healthyProjects = projects.filter(p => p.ragStatus === 'green').length;
     const avgDangerScore = projects.reduce((acc, p) => acc + p.dangerScore, 0) / totalProjects;
+    const trend = avgDangerScore < 5 ? 'positive' : 'negative';
     
     return {
       totalProjects,
       criticalProjects,
       healthyProjects,
-      avgDangerScore: avgDangerScore.toFixed(1)
+      avgDangerScore: avgDangerScore.toFixed(1),
+      trend
     };
   };
 
@@ -47,44 +49,44 @@ export const PeopleSection = () => {
             const stats = getManagerStats(projects);
             
             return (
-              <Card key={owner} className="p-6">
-                <div className="space-y-4">
+              <Card key={owner} className="p-6 hover:shadow-lg transition-all duration-200">
+                <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Users className="h-5 w-5 text-primary" />
                         <h3 className="text-xl font-semibold">{owner}</h3>
                       </div>
-                      <div className="flex gap-2 mt-2">
-                        <Badge variant="outline">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="bg-primary/5">
                           {stats.totalProjects} Projects
                         </Badge>
-                        <Badge variant="outline" className="text-rag-red border-rag-red">
+                        <Badge variant="outline" className="text-rag-red border-rag-red bg-rag-red/5">
                           {stats.criticalProjects} Critical
                         </Badge>
-                        <Badge variant="outline" className="text-rag-green border-rag-green">
+                        <Badge variant="outline" className="text-rag-green border-rag-green bg-rag-green/5">
                           {stats.healthyProjects} Healthy
                         </Badge>
                       </div>
                     </div>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <div className="text-right">
-                          <div className="text-sm text-muted-foreground">Risk Score</div>
-                          <div className="text-2xl font-bold">{stats.avgDangerScore}</div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Average risk score across all projects</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <div className="text-right space-y-1">
+                      <div className="flex items-center gap-2 justify-end">
+                        <span className="text-2xl font-bold">{stats.avgDangerScore}</span>
+                        {stats.trend === 'positive' ? (
+                          <ArrowDownRight className="h-5 w-5 text-rag-green" />
+                        ) : (
+                          <ArrowUpRight className="h-5 w-5 text-rag-red" />
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">Risk Score</p>
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="grid gap-3">
                     {projects.map((project) => (
                       <div
                         key={project.id}
-                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                        className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -93,7 +95,7 @@ export const PeopleSection = () => {
                               {project.code}
                             </Badge>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             {project.departments.map((dept) => (
                               <Badge
                                 key={dept}
@@ -104,25 +106,42 @@ export const PeopleSection = () => {
                               </Badge>
                             ))}
                           </div>
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {project.statusUpdate}
-                          </p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <div className="text-sm font-medium">
-                              Risk Score
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {project.dangerScore}/10
-                            </div>
-                          </div>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className="w-32">
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span>Risk Score</span>
+                                  <span>{project.dangerScore}/10</span>
+                                </div>
+                                <Progress 
+                                  value={project.dangerScore * 10} 
+                                  className={cn(
+                                    "h-2",
+                                    project.dangerScore >= 7 ? "bg-rag-red/20" :
+                                    project.dangerScore >= 4 ? "bg-rag-amber/20" :
+                                    "bg-rag-green/20"
+                                  )}
+                                  indicatorClassName={cn(
+                                    project.dangerScore >= 7 ? "bg-rag-red" :
+                                    project.dangerScore >= 4 ? "bg-rag-amber" :
+                                    "bg-rag-green"
+                                  )}
+                                />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Project risk level: {project.dangerScore}/10</p>
+                            </TooltipContent>
+                          </Tooltip>
                           <Badge
-                            className={`capitalize ${
-                              project.ragStatus === 'red' ? 'bg-red-100 text-red-700' :
-                              project.ragStatus === 'amber' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-green-100 text-green-700'
-                            }`}
+                            className={cn(
+                              "capitalize",
+                              project.ragStatus === 'red' ? 'bg-rag-red/10 text-rag-red border-rag-red' :
+                              project.ragStatus === 'amber' ? 'bg-rag-amber/10 text-rag-amber border-rag-amber' :
+                              'bg-rag-green/10 text-rag-green border-rag-green'
+                            )}
                           >
                             {project.ragStatus}
                           </Badge>
