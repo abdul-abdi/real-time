@@ -26,8 +26,8 @@ export const PeopleSection = () => {
 
   const getManagerStats = (projects: Project[]) => {
     const totalProjects = projects.length;
-    const criticalProjects = projects.filter(p => p.ragStatus === 'red').length;
-    const healthyProjects = projects.filter(p => p.ragStatus === 'green').length;
+    const criticalProjects = projects.filter(p => p.dangerScore >= 7).length;
+    const healthyProjects = projects.filter(p => p.dangerScore < 4).length;
     const avgDangerScore = projects.reduce((acc, p) => acc + p.dangerScore, 0) / totalProjects;
     const trend = avgDangerScore < 5 ? 'positive' : 'negative';
     
@@ -95,7 +95,7 @@ export const PeopleSection = () => {
                           )} />
                           <span className="text-2xl font-bold">{stats.avgDangerScore}</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">Avg Risk Score</p>
+                        <p className="text-sm text-muted-foreground">Avg Danger Score</p>
                       </div>
                       <Button
                         variant="outline"
@@ -113,7 +113,7 @@ export const PeopleSection = () => {
                   </div>
 
                   {isExpanded && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 animate-fade-in">
                       {projects.map((project) => (
                         <ProjectCard key={project.id} project={project} />
                       ))}

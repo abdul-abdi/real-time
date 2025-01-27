@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 export const SettingsSection = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [slackNotifications, setSlackNotifications] = useState(true);
-  const [riskThreshold, setRiskThreshold] = useState("7");
+  const [dangerThreshold, setDangerThreshold] = useState("7");
   const [updateFrequency, setUpdateFrequency] = useState("daily");
   const [defaultView, setDefaultView] = useState("grid");
   const [itemsPerPage, setItemsPerPage] = useState("12");
@@ -30,7 +30,7 @@ export const SettingsSection = () => {
       setItemsPerPage(settings.itemsPerPage || "12");
       setEmailNotifications(settings.emailNotifications ?? true);
       setSlackNotifications(settings.slackNotifications ?? true);
-      setRiskThreshold(settings.riskThreshold || "7");
+      setDangerThreshold(settings.dangerThreshold || "7");
       setUpdateFrequency(settings.updateFrequency || "daily");
     }
   }, []);
@@ -41,7 +41,7 @@ export const SettingsSection = () => {
       itemsPerPage,
       emailNotifications,
       slackNotifications,
-      riskThreshold,
+      dangerThreshold,
       updateFrequency,
     };
     localStorage.setItem('displaySettings', JSON.stringify(settings));
@@ -67,6 +67,42 @@ export const SettingsSection = () => {
       </div>
 
       <div className="grid gap-6">
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Display Settings</h3>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Default View</Label>
+              <Select value={defaultView} onValueChange={setDefaultView}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select view" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="grid">Grid View</SelectItem>
+                  <SelectItem value="list">List View</SelectItem>
+                  <SelectItem value="kanban">Kanban View</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                Choose how projects are displayed by default
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Items Per Page</Label>
+              <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select number" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="8">8 items</SelectItem>
+                  <SelectItem value="12">12 items</SelectItem>
+                  <SelectItem value="24">24 items</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
+
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Notifications</h3>
           <div className="space-y-4">
@@ -101,22 +137,22 @@ export const SettingsSection = () => {
           <h3 className="text-lg font-semibold mb-4">Alert Preferences</h3>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Risk Score Threshold</Label>
+              <Label>Danger Score Threshold</Label>
               <Select
-                value={riskThreshold}
-                onValueChange={setRiskThreshold}
+                value={dangerThreshold}
+                onValueChange={setDangerThreshold}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select threshold" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="5">5 - Moderate Risk</SelectItem>
-                  <SelectItem value="7">7 - High Risk</SelectItem>
-                  <SelectItem value="9">9 - Critical Risk</SelectItem>
+                  <SelectItem value="5">5 - Moderate Danger</SelectItem>
+                  <SelectItem value="7">7 - High Danger</SelectItem>
+                  <SelectItem value="9">9 - Critical Danger</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground">
-                Get notified when projects exceed this risk score
+                Get notified when projects exceed this danger score
               </p>
             </div>
 
@@ -138,39 +174,6 @@ export const SettingsSection = () => {
               <p className="text-sm text-muted-foreground">
                 How often you want to receive updates
               </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Display Settings</h3>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Default View</Label>
-              <Select value={defaultView} onValueChange={setDefaultView}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select view" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="grid">Grid View</SelectItem>
-                  <SelectItem value="list">List View</SelectItem>
-                  <SelectItem value="kanban">Kanban View</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Items Per Page</Label>
-              <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select number" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="8">8 items</SelectItem>
-                  <SelectItem value="12">12 items</SelectItem>
-                  <SelectItem value="24">24 items</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </Card>

@@ -85,6 +85,47 @@ const Index = () => {
     }
   };
 
+  const renderKanbanView = () => {
+    const redProjects = filteredProjects.filter(p => p.ragStatus === "red");
+    const amberProjects = filteredProjects.filter(p => p.ragStatus === "amber");
+    const greenProjects = filteredProjects.filter(p => p.ragStatus === "green");
+
+    return (
+      <div className="flex gap-6 overflow-x-auto pb-6">
+        <div className="space-y-4 min-w-[350px]">
+          <h3 className="font-semibold text-rag-red flex items-center gap-2">
+            Critical Projects ({redProjects.length})
+          </h3>
+          <div className="space-y-4">
+            {redProjects.map(project => (
+              <ProjectCard key={project.id} project={project} view="kanban" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-4 min-w-[350px]">
+          <h3 className="font-semibold text-rag-amber flex items-center gap-2">
+            At Risk Projects ({amberProjects.length})
+          </h3>
+          <div className="space-y-4">
+            {amberProjects.map(project => (
+              <ProjectCard key={project.id} project={project} view="kanban" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-4 min-w-[350px]">
+          <h3 className="font-semibold text-rag-green flex items-center gap-2">
+            Healthy Projects ({greenProjects.length})
+          </h3>
+          <div className="space-y-4">
+            {greenProjects.map(project => (
+              <ProjectCard key={project.id} project={project} view="kanban" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Header onSearch={setSearchQuery} searchQuery={searchQuery} />
@@ -134,20 +175,23 @@ const Index = () => {
                   </div>
                 </div>
               ) : (
-                <div className={cn(
-                  "animate-fade-in",
-                  currentView === "grid" && "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-                  currentView === "list" && "space-y-4",
-                  currentView === "kanban" && "flex gap-6 overflow-x-auto pb-6"
-                )}>
-                  {filteredProjects.map((project) => (
-                    <ProjectCard 
-                      key={project.id} 
-                      project={project}
-                      view={currentView}
-                    />
-                  ))}
-                </div>
+                currentView === "kanban" ? (
+                  renderKanbanView()
+                ) : (
+                  <div className={cn(
+                    "animate-fade-in",
+                    currentView === "grid" && "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+                    currentView === "list" && "space-y-4"
+                  )}>
+                    {filteredProjects.map((project) => (
+                      <ProjectCard 
+                        key={project.id} 
+                        project={project}
+                        view={currentView}
+                      />
+                    ))}
+                  </div>
+                )
               )}
             </div>
           </>
