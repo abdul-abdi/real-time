@@ -4,11 +4,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Project } from "@/types/project";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ChartBar, Users, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ChevronDown, ChevronUp, Users, Activity } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { ProjectCard } from "@/components/ProjectCard";
 
 export const PeopleSection = () => {
+  const [expandedManagers, setExpandedManagers] = useState<string[]>([]);
+
   const projectsByOwner = mockProjects.reduce((acc, project) => {
     project.owners.forEach(owner => {
       if (!acc[owner]) {
@@ -35,6 +40,14 @@ export const PeopleSection = () => {
     };
   };
 
+  const toggleManager = (owner: string) => {
+    setExpandedManagers(prev => 
+      prev.includes(owner)
+        ? prev.filter(m => m !== owner)
+        : [...prev, owner]
+    );
+  };
+
   return (
     <div className="container py-8 space-y-6">
       <div>
@@ -48,6 +61,7 @@ export const PeopleSection = () => {
         <div className="grid gap-6">
           {Object.entries(projectsByOwner).map(([owner, projects]) => {
             const stats = getManagerStats(projects);
+            const isExpanded = expandedManagers.includes(owner);
             
             return (
               <Card key={owner} className="p-6 hover:shadow-lg transition-all duration-200">
@@ -70,84 +84,41 @@ export const PeopleSection = () => {
                         </Badge>
                       </div>
                     </div>
-                    <div className="text-right space-y-1">
-                      <div className="flex items-center gap-2 justify-end">
-                        <span className="text-2xl font-bold">{stats.avgDangerScore}</span>
-                        {stats.trend === 'positive' ? (
-                          <ArrowDownRight className="h-5 w-5 text-rag-green" />
-                        ) : (
-                          <ArrowUpRight className="h-5 w-5 text-rag-red" />
-                        )}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Activity className={cn(
+                            "h-5 w-5",
+                            Number(stats.avgDangerScore) >= 7 ? "text-rag-red" :
+                            Number(stats.avgDangerScore) >= 4 ? "text-rag-amber" :
+                            "text-rag-green"
+                          )} />
+                          <span className="text-2xl font-bold">{stats.avgDangerScore}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Avg Risk Score</p>
                       </div>
-                      <p className="text-sm text-muted-foreground">Risk Score</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleManager(owner)}
+                        className="ml-4"
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="grid gap-3">
-                    {projects.map((project) => (
-                      <div
-                        key={project.id}
-                        className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">{project.name}</p>
-                            <Badge variant="outline" className="text-xs">
-                              {project.code}
-                            </Badge>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {project.departments.map((dept) => (
-                              <Badge
-                                key={dept}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {dept}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <div className="w-32">
-                                <div className="flex justify-between text-sm mb-1">
-                                  <span>Risk Score</span>
-                                  <span>{project.dangerScore}/10</span>
-                                </div>
-                                <Progress 
-                                  value={project.dangerScore * 10} 
-                                  className={cn(
-                                    "h-2",
-                                    project.dangerScore >= 7 ? "bg-rag-red/20" :
-                                    project.dangerScore >= 4 ? "bg-rag-amber/20" :
-                                    "bg-rag-green/20",
-                                    project.dangerScore >= 7 ? "[&>div]:bg-rag-red" :
-                                    project.dangerScore >= 4 ? "[&>div]:bg-rag-amber" :
-                                    "[&>div]:bg-rag-green"
-                                  )}
-                                />
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Project risk level: {project.dangerScore}/10</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Badge
-                            className={cn(
-                              "capitalize",
-                              project.ragStatus === 'red' ? 'bg-rag-red/10 text-rag-red border-rag-red' :
-                              project.ragStatus === 'amber' ? 'bg-rag-amber/10 text-rag-amber border-rag-amber' :
-                              'bg-rag-green/10 text-rag-green border-rag-green'
-                            )}
-                          >
-                            {project.ragStatus}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {isExpanded && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                      {projects.map((project) => (
+                        <ProjectCard key={project.id} project={project} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Card>
             );

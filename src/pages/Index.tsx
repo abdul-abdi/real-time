@@ -18,6 +18,15 @@ import { CustomView } from "@/types/customView";
 const Index = () => {
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
   const [activeView, setActiveView] = useState<CustomView | null>(null);
+  const [currentView, setCurrentView] = useState<"grid" | "list" | "kanban">(() => {
+    const savedSettings = localStorage.getItem('displaySettings');
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      return settings.defaultView || "grid";
+    }
+    return "grid";
+  });
+
   const {
     searchQuery,
     setSearchQuery,
@@ -44,6 +53,17 @@ const Index = () => {
       return now.getTime() - lastUpdated.getTime() < 24 * 60 * 60 * 1000;
     }).length,
   };
+
+  useEffect(() => {
+    const handleViewChange = (event: CustomEvent) => {
+      setCurrentView(event.detail.view);
+    };
+
+    window.addEventListener('viewSettingsChanged', handleViewChange as EventListener);
+    return () => {
+      window.removeEventListener('viewSettingsChanged', handleViewChange as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     if (activeSection === "dashboard") {
@@ -113,9 +133,18 @@ const Index = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                <div className={cn(
+                  "animate-fade-in",
+                  currentView === "grid" && "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
+                  currentView === "list" && "space-y-4",
+                  currentView === "kanban" && "flex gap-6 overflow-x-auto pb-6"
+                )}>
                   {filteredProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCard 
+                      key={project.id} 
+                      project={project}
+                      view={currentView}
+                    />
                   ))}
                 </div>
               )}

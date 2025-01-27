@@ -22,7 +22,6 @@ export const SettingsSection = () => {
   const [itemsPerPage, setItemsPerPage] = useState("12");
   const { toast } = useToast();
 
-  // Load settings from localStorage on component mount
   useEffect(() => {
     const savedSettings = localStorage.getItem('displaySettings');
     if (savedSettings) {
@@ -46,6 +45,11 @@ export const SettingsSection = () => {
       updateFrequency,
     };
     localStorage.setItem('displaySettings', JSON.stringify(settings));
+    
+    // Dispatch an event to notify other components about the view change
+    window.dispatchEvent(new CustomEvent('viewSettingsChanged', { 
+      detail: { view: defaultView }
+    }));
     
     toast({
       title: "Settings saved",

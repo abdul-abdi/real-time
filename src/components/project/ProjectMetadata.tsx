@@ -1,6 +1,6 @@
 import { Project } from "@/types/project";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, AlertTriangle } from "lucide-react";
+import { Clock, Users, AlertTriangle, Activity } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -21,11 +21,13 @@ export const ProjectMetadata = ({ project }: ProjectMetadataProps) => {
     return `${Math.floor(diffInDays / 30)} months ago`;
   };
 
-  const getDangerBadge = (score: number) => {
-    if (score >= 7) return "high";
-    if (score >= 4) return "medium";
-    return "low";
+  const getDangerLevel = (score: number) => {
+    if (score >= 7) return { level: "Critical", color: "text-rag-red" };
+    if (score >= 4) return { level: "Moderate", color: "text-rag-amber" };
+    return { level: "Low", color: "text-rag-green" };
   };
+
+  const dangerInfo = getDangerLevel(project.dangerScore);
 
   return (
     <div className="space-y-4">
@@ -54,20 +56,23 @@ export const ProjectMetadata = ({ project }: ProjectMetadataProps) => {
         </div>
         <Tooltip>
           <TooltipTrigger>
-            <Badge
-              variant="outline"
-              className={cn(
-                "capitalize",
-                getDangerBadge(project.dangerScore) === "high" && "border-rag-red text-rag-red",
-                getDangerBadge(project.dangerScore) === "medium" && "border-rag-amber text-rag-amber",
-                getDangerBadge(project.dangerScore) === "low" && "border-rag-green text-rag-green"
-              )}
-            >
-              Risk Score: {project.dangerScore}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Activity className={cn("h-4 w-4", dangerInfo.color)} />
+              <Badge
+                variant="outline"
+                className={cn(
+                  "capitalize",
+                  project.dangerScore >= 7 && "border-rag-red text-rag-red",
+                  project.dangerScore >= 4 && project.dangerScore < 7 && "border-rag-amber text-rag-amber",
+                  project.dangerScore < 4 && "border-rag-green text-rag-green"
+                )}
+              >
+                Risk Level: {project.dangerScore}/10
+              </Badge>
+            </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Project Risk Level</p>
+            <p>{dangerInfo.level} Risk Level</p>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -75,7 +80,7 @@ export const ProjectMetadata = ({ project }: ProjectMetadataProps) => {
       {project.dangerScore >= 7 && (
         <div className="flex items-center gap-1 text-rag-red text-sm">
           <AlertTriangle className="h-4 w-4" />
-          <span>High Risk Project</span>
+          <span>Critical Risk Level</span>
         </div>
       )}
 
