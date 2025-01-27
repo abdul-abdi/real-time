@@ -17,13 +17,18 @@ import { ProjectDetailsDialog } from "./project/ProjectDetailsDialog";
 
 interface ProjectCardProps {
   project: Project;
+  view?: "grid" | "list" | "kanban";
 }
 
-export const ProjectCard = ({ project }: ProjectCardProps) => {
+export const ProjectCard = ({ project, view = "grid" }: ProjectCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Card className="group relative overflow-hidden transition-all hover:shadow-lg rounded-2xl hover:scale-[1.02] duration-200">
+    <Card className={cn(
+      "group relative overflow-hidden transition-all hover:shadow-lg rounded-2xl hover:scale-[1.02] duration-200",
+      view === "list" && "flex items-center",
+      view === "kanban" && "w-[350px] flex-shrink-0"
+    )}>
       <RAGStatusIndicator status={project.ragStatus} />
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">

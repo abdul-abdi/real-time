@@ -14,6 +14,7 @@ import { AnalyticsSection } from "@/components/sections/AnalyticsSection";
 import { SettingsSection } from "@/components/sections/SettingsSection";
 import { CustomViewSection } from "@/components/sections/CustomViewSection";
 import { CustomView } from "@/types/customView";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
