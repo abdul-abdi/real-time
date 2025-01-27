@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Project } from "@/types/project";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronUp, Users, Activity } from "lucide-react";
+import { ChevronDown, ChevronUp, UserRound, Activity, TrendingUp, TrendingDown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -58,64 +58,69 @@ export const PeopleSection = () => {
       </div>
       
       <ScrollArea className="h-[calc(100vh-12rem)]">
-        <div className="grid gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Object.entries(projectsByOwner).map(([owner, projects]) => {
             const stats = getManagerStats(projects);
             const isExpanded = expandedManagers.includes(owner);
             
             return (
-              <Card key={owner} className="p-6 hover:shadow-lg transition-all duration-200">
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-primary" />
-                        <h3 className="text-xl font-semibold">{owner}</h3>
+              <Card key={owner} className="relative overflow-hidden group hover:shadow-lg transition-all duration-200">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary"></div>
+                <div className="p-6 space-y-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <UserRound className="h-8 w-8 text-primary" />
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="bg-primary/5">
-                          {stats.totalProjects} Projects
-                        </Badge>
-                        <Badge variant="outline" className="text-rag-red border-rag-red bg-rag-red/5">
-                          {stats.criticalProjects} Critical
-                        </Badge>
-                        <Badge variant="outline" className="text-rag-green border-rag-green bg-rag-green/5">
-                          {stats.healthyProjects} Healthy
-                        </Badge>
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-semibold">{owner}</h3>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline" className="bg-primary/5">
+                            {stats.totalProjects} Projects
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Activity className={cn(
-                            "h-5 w-5",
-                            Number(stats.avgDangerScore) >= 7 ? "text-rag-red" :
-                            Number(stats.avgDangerScore) >= 4 ? "text-rag-amber" :
-                            "text-rag-green"
-                          )} />
-                          <span className="text-2xl font-bold">{stats.avgDangerScore}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">Avg Danger Score</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleManager(owner)}
-                        className="ml-4"
-                      >
-                        {isExpanded ? (
-                          <ChevronUp className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleManager(owner)}
+                      className="ml-4"
+                    >
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Critical</p>
+                      <p className="text-2xl font-bold text-rag-red">{stats.criticalProjects}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Healthy</p>
+                      <p className="text-2xl font-bold text-rag-green">{stats.healthyProjects}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Danger Score</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl font-bold">{stats.avgDangerScore}</p>
+                        {stats.trend === 'positive' ? (
+                          <TrendingUp className="h-4 w-4 text-rag-green" />
                         ) : (
-                          <ChevronDown className="h-4 w-4" />
+                          <TrendingDown className="h-4 w-4 text-rag-red" />
                         )}
-                      </Button>
+                      </div>
                     </div>
                   </div>
 
                   {isExpanded && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 animate-fade-in">
+                    <div className="grid grid-cols-1 gap-4 mt-4 animate-fade-in">
                       {projects.map((project) => (
-                        <ProjectCard key={project.id} project={project} />
+                        <ProjectCard key={project.id} project={project} view="list" />
                       ))}
                     </div>
                   )}

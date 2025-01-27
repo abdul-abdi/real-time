@@ -12,7 +12,11 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
+  Legend,
 } from "recharts";
+import { ChartPie, TrendingUp, Activity, AlertTriangle } from "lucide-react";
 
 export const AnalyticsSection = () => {
   // Calculate department statistics
@@ -55,6 +59,16 @@ export const AnalyticsSection = () => {
     value,
   }));
 
+  // Trend data (simulated for last 6 months)
+  const trendData = [
+    { month: 'Jan', red: 4, amber: 6, green: 8 },
+    { month: 'Feb', red: 3, amber: 7, green: 8 },
+    { month: 'Mar', red: 5, amber: 5, green: 8 },
+    { month: 'Apr', red: 2, amber: 8, green: 8 },
+    { month: 'May', red: 3, amber: 6, green: 9 },
+    { month: 'Jun', red: 4, amber: 5, green: 9 },
+  ];
+
   const COLORS = {
     red: "#ef4444",
     amber: "#f59e0b",
@@ -71,23 +85,36 @@ export const AnalyticsSection = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Department Performance</h3>
+        <Card className="p-6 hover:shadow-lg transition-all duration-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Activity className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Department Performance</h3>
+          </div>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={departmentData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="avgRisk" fill="#6366f1" name="Risk Score" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="name" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(17, 24, 39, 0.8)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }} 
+                />
+                <Bar dataKey="avgRisk" fill="#6366f1" name="Danger Score" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Project Status Distribution</h3>
+        <Card className="p-6 hover:shadow-lg transition-all duration-200">
+          <div className="flex items-center gap-2 mb-4">
+            <ChartPie className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Project Status Distribution</h3>
+          </div>
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -111,14 +138,45 @@ export const AnalyticsSection = () => {
           </div>
         </Card>
 
-        <Card className="p-6 lg:col-span-2">
-          <h3 className="text-lg font-semibold mb-4">Department Details</h3>
+        <Card className="p-6 lg:col-span-2 hover:shadow-lg transition-all duration-200">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Project Status Trends</h3>
+          </div>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="month" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgba(17, 24, 39, 0.8)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="red" stroke={COLORS.red} name="Critical" />
+                <Line type="monotone" dataKey="amber" stroke={COLORS.amber} name="At Risk" />
+                <Line type="monotone" dataKey="green" stroke={COLORS.green} name="Healthy" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        <Card className="p-6 lg:col-span-2 hover:shadow-lg transition-all duration-200">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Department Details</h3>
+          </div>
           <ScrollArea className="h-[300px]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {departmentData.map((dept) => (
                 <div
                   key={dept.name}
-                  className="p-4 rounded-lg border bg-card"
+                  className="p-4 rounded-lg border bg-card hover:shadow-md transition-all duration-200"
                 >
                   <h4 className="font-medium">{dept.name}</h4>
                   <div className="mt-2 space-y-1 text-sm">
@@ -127,7 +185,7 @@ export const AnalyticsSection = () => {
                     <p className="text-rag-amber">At Risk: {dept.amber}</p>
                     <p className="text-rag-green">Healthy: {dept.green}</p>
                     <p className="font-medium mt-2">
-                      Avg Risk Score: {dept.avgRisk}
+                      Avg Danger Score: {dept.avgRisk}
                     </p>
                   </div>
                 </div>
