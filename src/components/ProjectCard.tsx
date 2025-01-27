@@ -26,15 +26,15 @@ export const ProjectCard = ({ project, view = "grid" }: ProjectCardProps) => {
   return (
     <Card className={cn(
       "group relative overflow-hidden transition-all hover:shadow-lg rounded-2xl hover:scale-[1.02] duration-200",
-      view === "list" && "flex items-center gap-4 p-4",
-      view === "kanban" && "w-[350px] flex-shrink-0"
+      view === "list" && "flex flex-col sm:flex-row items-center gap-4 p-4",
+      view === "kanban" && "w-full sm:w-[350px] flex-shrink-0"
     )}>
       <RAGStatusIndicator status={project.ragStatus} />
       
       {view === "list" ? (
         <>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <CardTitle className="text-lg line-clamp-1">{project.name}</CardTitle>
                 <CardDescription className="line-clamp-1">{project.code}</CardDescription>
@@ -42,7 +42,7 @@ export const ProjectCard = ({ project, view = "grid" }: ProjectCardProps) => {
               <Badge
                 variant="outline"
                 className={cn(
-                  "capitalize shrink-0 transition-colors ml-4",
+                  "capitalize shrink-0 transition-colors w-fit",
                   project.ragStatus === "red" && "border-rag-red text-rag-red",
                   project.ragStatus === "amber" && "border-rag-amber text-rag-amber",
                   project.ragStatus === "green" && "border-rag-green text-rag-green"
@@ -58,17 +58,18 @@ export const ProjectCard = ({ project, view = "grid" }: ProjectCardProps) => {
           <Button
             variant="outline"
             size="sm"
-            className="shrink-0"
+            className="shrink-0 w-full sm:w-auto mt-4 sm:mt-0"
             onClick={() => setIsOpen(true)}
           >
+            <span className="mr-2 sm:hidden">View Details</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </>
       ) : (
         <>
           <CardHeader className="pb-2">
-            <div className="flex items-start justify-between">
-              <div>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
                 <CardTitle className="text-lg line-clamp-1">{project.name}</CardTitle>
                 <CardDescription className="line-clamp-1">{project.code}</CardDescription>
               </div>

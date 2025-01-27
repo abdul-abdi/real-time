@@ -50,30 +50,37 @@ export const PeopleSection = () => {
 
   return (
     <div className="container py-8 space-y-6">
-      <div>
+      <div className="space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Project Managers</h2>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground">
           Detailed overview of project managers and their portfolio performance
         </p>
       </div>
       
       <ScrollArea className="h-[calc(100vh-12rem)]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
           {Object.entries(projectsByOwner).map(([owner, projects]) => {
             const stats = getManagerStats(projects);
             const isExpanded = expandedManagers.includes(owner);
             
             return (
-              <Card key={owner} className="relative overflow-hidden group hover:shadow-lg transition-all duration-200">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary"></div>
+              <Card 
+                key={owner} 
+                className={cn(
+                  "relative overflow-hidden group transition-all duration-200",
+                  "hover:shadow-lg hover:scale-[1.02]",
+                  "bg-gradient-to-br from-background to-muted"
+                )}
+              >
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary" />
                 <div className="p-6 space-y-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 transition-colors group-hover:bg-primary/20">
                         <UserRound className="h-8 w-8 text-primary" />
                       </div>
-                      <div className="space-y-1">
-                        <h3 className="text-xl font-semibold">{owner}</h3>
+                      <div className="space-y-1 min-w-0">
+                        <h3 className="text-xl font-semibold truncate">{owner}</h3>
                         <div className="flex flex-wrap gap-2">
                           <Badge variant="outline" className="bg-primary/5">
                             {stats.totalProjects} Projects
@@ -85,7 +92,7 @@ export const PeopleSection = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleManager(owner)}
-                      className="ml-4"
+                      className="shrink-0"
                     >
                       {isExpanded ? (
                         <ChevronUp className="h-4 w-4" />
@@ -95,30 +102,60 @@ export const PeopleSection = () => {
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Critical</p>
-                      <p className="text-2xl font-bold text-rag-red">{stats.criticalProjects}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Critical</p>
+                          <p className="text-2xl font-bold text-rag-red">{stats.criticalProjects}</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>Critical projects requiring immediate attention</TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Healthy</p>
+                          <p className="text-2xl font-bold text-rag-green">{stats.healthyProjects}</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>Projects in good standing</TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="space-y-2 col-span-2 sm:col-span-1">
+                          <p className="text-sm text-muted-foreground">Risk Score</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-2xl font-bold">{stats.avgDangerScore}</p>
+                            {stats.trend === 'positive' ? (
+                              <TrendingUp className="h-4 w-4 text-rag-green" />
+                            ) : (
+                              <TrendingDown className="h-4 w-4 text-rag-red" />
+                            )}
+                          </div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>Average risk score across all projects</TooltipContent>
+                    </Tooltip>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Portfolio Health</span>
+                      <span className="font-medium">
+                        {Math.round((stats.healthyProjects / stats.totalProjects) * 100)}%
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Healthy</p>
-                      <p className="text-2xl font-bold text-rag-green">{stats.healthyProjects}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Danger Score</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-2xl font-bold">{stats.avgDangerScore}</p>
-                        {stats.trend === 'positive' ? (
-                          <TrendingUp className="h-4 w-4 text-rag-green" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 text-rag-red" />
-                        )}
-                      </div>
-                    </div>
+                    <Progress 
+                      value={(stats.healthyProjects / stats.totalProjects) * 100}
+                      className="h-2"
+                    />
                   </div>
 
                   {isExpanded && (
-                    <div className="grid grid-cols-1 gap-4 mt-4 animate-fade-in">
+                    <div className="grid grid-cols-1 gap-4 mt-6 animate-fade-in">
                       {projects.map((project) => (
                         <ProjectCard key={project.id} project={project} view="list" />
                       ))}
