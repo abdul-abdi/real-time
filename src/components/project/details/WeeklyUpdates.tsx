@@ -20,11 +20,12 @@ interface WeeklyUpdate {
 
 interface WeeklyUpdatesProps {
   updates: WeeklyUpdate[];
+  showForm?: boolean; // Added this prop to the interface
 }
 
-export const WeeklyUpdates = ({ updates: initialUpdates }: WeeklyUpdatesProps) => {
+export const WeeklyUpdates = ({ updates: initialUpdates, showForm: initialShowForm = false }: WeeklyUpdatesProps) => {
   const [updates, setUpdates] = useState(initialUpdates);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(initialShowForm);
   const { toast } = useToast();
 
   const handleAddUpdate = (newUpdate: Omit<WeeklyUpdate, "week">) => {
