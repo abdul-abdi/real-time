@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectHeader } from "./details/ProjectHeader";
 import { ProjectOverview } from "./details/ProjectOverview";
 import { WeeklyUpdates } from "./details/WeeklyUpdates";
+import { useState } from "react";
 
 interface ProjectDetailsDialogProps {
   project: Project;
@@ -20,6 +21,9 @@ export const ProjectDetailsDialog = ({
   isOpen,
   onOpenChange,
 }: ProjectDetailsDialogProps) => {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+
   const weeklyUpdates = [
     {
       week: "Week 4",
@@ -63,12 +67,21 @@ export const ProjectDetailsDialog = ({
     },
   ];
 
+  const handleAddUpdate = () => {
+    setActiveTab("updates");
+    setShowUpdateForm(true);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] h-[90vh] flex flex-col">
         <ProjectHeader project={project} />
         
-        <Tabs defaultValue="overview" className="flex-1 overflow-hidden">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={setActiveTab} 
+          className="flex-1 overflow-hidden"
+        >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="updates">Weekly Updates</TabsTrigger>
@@ -76,11 +89,17 @@ export const ProjectDetailsDialog = ({
           
           <ScrollArea className="flex-1 h-[calc(90vh-200px)]">
             <TabsContent value="overview">
-              <ProjectOverview project={project} />
+              <ProjectOverview 
+                project={project} 
+                onAddUpdate={handleAddUpdate}
+              />
             </TabsContent>
 
             <TabsContent value="updates">
-              <WeeklyUpdates updates={weeklyUpdates} />
+              <WeeklyUpdates 
+                updates={weeklyUpdates}
+                showForm={showUpdateForm}
+              />
             </TabsContent>
           </ScrollArea>
         </Tabs>

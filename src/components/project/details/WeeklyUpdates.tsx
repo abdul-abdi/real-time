@@ -4,6 +4,8 @@ import { WeeklyUpdateCard } from "./WeeklyUpdateCard";
 import { WeeklyUpdateForm } from "./WeeklyUpdateForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
 
 interface WeeklyUpdate {
   week: string;
@@ -57,18 +59,30 @@ export const WeeklyUpdates = ({ updates: initialUpdates }: WeeklyUpdatesProps) =
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Weekly Updates</h3>
-        <Button onClick={() => setShowForm(!showForm)} variant="outline">
-          {showForm ? "Cancel" : "Add Update"}
+        <Button 
+          onClick={() => setShowForm(!showForm)} 
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          {showForm ? (
+            <>Cancel</>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Add Update
+            </>
+          )}
         </Button>
       </div>
 
       {showForm && (
-        <div className="border rounded-lg p-4 bg-muted/50">
+        <Card className="p-4 border-2 border-primary/20 bg-muted/50">
           <WeeklyUpdateForm onSubmit={handleAddUpdate} />
-        </div>
+        </Card>
       )}
 
-      <div className="flex gap-4 justify-center text-sm">
+      <div className="flex gap-4 justify-center text-sm bg-muted/50 p-4 rounded-lg">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-rag-green" />
           <span>Healthy: {distribution.green}</span>
