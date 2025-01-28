@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 interface WeeklyUpdateCardProps {
   week: string;
@@ -11,7 +12,6 @@ interface WeeklyUpdateCardProps {
     pendingTasks: number;
     blockers: number;
   };
-  isActive?: boolean;
 }
 
 export const WeeklyUpdateCard = ({
@@ -19,13 +19,14 @@ export const WeeklyUpdateCard = ({
   update,
   status,
   metrics,
-  isActive = false,
 }: WeeklyUpdateCardProps) => {
+  const totalTasks = metrics.completedTasks + metrics.pendingTasks;
+  const completionPercentage = totalTasks > 0 
+    ? (metrics.completedTasks / totalTasks) * 100 
+    : 0;
+
   return (
-    <Card className={cn(
-      "p-4 transition-all duration-200",
-      !isActive && "opacity-60 hover:opacity-80"
-    )}>
+    <Card className="p-4 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-2">
         <h4 className="font-medium">{week}</h4>
         <Badge
@@ -37,22 +38,34 @@ export const WeeklyUpdateCard = ({
             status === "green" && "border-rag-green text-rag-green"
           )}
         >
-          {status}
+          {status === "red" ? "Critical" : status === "amber" ? "At Risk" : "Healthy"}
         </Badge>
       </div>
-      <p className="text-sm text-muted-foreground mb-3">{update}</p>
-      <div className="grid grid-cols-3 gap-2 text-sm">
-        <div>
-          <span className="text-muted-foreground">Completed:</span>
-          <span className="ml-1 font-medium">{metrics.completedTasks}</span>
+      
+      <p className="text-sm text-muted-foreground mb-4">{update}</p>
+      
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Progress</span>
+            <span>{completionPercentage.toFixed(0)}%</span>
+          </div>
+          <Progress value={completionPercentage} className="h-2" />
         </div>
-        <div>
-          <span className="text-muted-foreground">Pending:</span>
-          <span className="ml-1 font-medium">{metrics.pendingTasks}</span>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Blockers:</span>
-          <span className="ml-1 font-medium">{metrics.blockers}</span>
+        
+        <div className="grid grid-cols-3 gap-2 text-sm">
+          <div className="text-center p-2 bg-muted rounded-lg">
+            <div className="font-medium">{metrics.completedTasks}</div>
+            <div className="text-xs text-muted-foreground">Completed</div>
+          </div>
+          <div className="text-center p-2 bg-muted rounded-lg">
+            <div className="font-medium">{metrics.pendingTasks}</div>
+            <div className="text-xs text-muted-foreground">Pending</div>
+          </div>
+          <div className="text-center p-2 bg-muted rounded-lg">
+            <div className="font-medium">{metrics.blockers}</div>
+            <div className="text-xs text-muted-foreground">Blockers</div>
+          </div>
         </div>
       </div>
     </Card>

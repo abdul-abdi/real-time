@@ -63,13 +63,6 @@ export const ProjectDetailsDialog = ({
     },
   ];
 
-  const trendData = [
-    { week: "Week 1", score: 3, completion: 10, risks: 1 },
-    { week: "Week 2", score: 5, completion: 25, risks: 2 },
-    { week: "Week 3", score: 7, completion: 45, risks: 3 },
-    { week: "Week 4", score: project.dangerScore, completion: 65, risks: 2 },
-  ];
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] h-[90vh] flex flex-col">
@@ -83,7 +76,7 @@ export const ProjectDetailsDialog = ({
           
           <ScrollArea className="flex-1 h-[calc(90vh-200px)]">
             <TabsContent value="overview">
-              <ProjectOverview project={project} trendData={trendData} />
+              <ProjectOverview project={project} />
             </TabsContent>
 
             <TabsContent value="updates">
