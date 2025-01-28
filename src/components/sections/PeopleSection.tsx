@@ -1,17 +1,30 @@
+import { useState, useMemo } from "react";
 import { mockProjects } from "@/data/mockProjects";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Project } from "@/types/project";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ChevronDown, ChevronUp, UserRound, Activity, TrendingUp, TrendingDown } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { 
+  UserRound, 
+  ArrowUpDown,
+  TrendingUp, 
+  TrendingDown 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { ProjectCard } from "@/components/ProjectCard";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ManagerProjectsList } from "../managers/ManagerProjectsList";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 export const PeopleSection = () => {
+  const [sortBy, setSortBy] = useState<"name" | "projects" | "risk">("name");
   const [expandedManagers, setExpandedManagers] = useState<string[]>([]);
 
   const projectsByOwner = mockProjects.reduce((acc, project) => {
@@ -36,9 +49,28 @@ export const PeopleSection = () => {
       criticalProjects,
       healthyProjects,
       avgDangerScore: avgDangerScore.toFixed(1),
-      trend
+      trend,
+      performance: (healthyProjects / totalProjects) * 100
     };
   };
+
+  const sortedManagers = useMemo(() => {
+    return Object.entries(projectsByOwner).sort((a, b) => {
+      const statsA = getManagerStats(a[1]);
+      const statsB = getManagerStats(b[1]);
+
+      switch (sortBy) {
+        case "name":
+          return a[0].localeCompare(b[0]);
+        case "projects":
+          return statsB.totalProjects - statsA.totalProjects;
+        case "risk":
+          return Number(statsB.avgDangerScore) - Number(statsA.avgDangerScore);
+        default:
+          return 0;
+      }
+    });
+  }, [projectsByOwner, sortBy]);
 
   const toggleManager = (owner: string) => {
     setExpandedManagers(prev => 
@@ -50,18 +82,40 @@ export const PeopleSection = () => {
 
   return (
     <div className="container py-8 space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Project Managers</h2>
-        <p className="text-muted-foreground">
-          Detailed overview of project managers and their portfolio performance
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">Project Managers</h2>
+          <p className="text-muted-foreground">
+            Overview of project managers and their portfolio performance
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select
+            value={sortBy}
+            onValueChange={(value: "name" | "projects" | "risk") => setSortBy(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Sort by Name</SelectItem>
+              <SelectItem value="projects">Sort by Projects</SelectItem>
+              <SelectItem value="risk">Sort by Risk Score</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       <ScrollArea className="h-[calc(100vh-12rem)]">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
-          {Object.entries(projectsByOwner).map(([owner, projects]) => {
+          {sortedManagers.map(([owner, projects]) => {
             const stats = getManagerStats(projects);
             const isExpanded = expandedManagers.includes(owner);
+            const initials = owner
+              .split(' ')
+              .map(n => n[0])
+              .join('')
+              .toUpperCase();
             
             return (
               <Card 
@@ -76,9 +130,11 @@ export const PeopleSection = () => {
                 <div className="p-6 space-y-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 transition-colors group-hover:bg-primary/20">
-                        <UserRound className="h-8 w-8 text-primary" />
-                      </div>
+                      <Avatar className="h-16 w-16">
+                        <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="space-y-1 min-w-0">
                         <h3 className="text-xl font-semibold truncate">{owner}</h3>
                         <div className="flex flex-wrap gap-2">
@@ -94,72 +150,49 @@ export const PeopleSection = () => {
                       onClick={() => toggleManager(owner)}
                       className="shrink-0"
                     >
-                      {isExpanded ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
+                      <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground">Critical</p>
-                          <p className="text-2xl font-bold text-rag-red">{stats.criticalProjects}</p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>Critical projects requiring immediate attention</TooltipContent>
-                    </Tooltip>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Critical</p>
+                      <p className="text-2xl font-bold text-rag-red">{stats.criticalProjects}</p>
+                    </div>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground">Healthy</p>
-                          <p className="text-2xl font-bold text-rag-green">{stats.healthyProjects}</p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>Projects in good standing</TooltipContent>
-                    </Tooltip>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Healthy</p>
+                      <p className="text-2xl font-bold text-rag-green">{stats.healthyProjects}</p>
+                    </div>
                     
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="space-y-2 col-span-2 sm:col-span-1">
-                          <p className="text-sm text-muted-foreground">Risk Score</p>
-                          <div className="flex items-center gap-2">
-                            <p className="text-2xl font-bold">{stats.avgDangerScore}</p>
-                            {stats.trend === 'positive' ? (
-                              <TrendingUp className="h-4 w-4 text-rag-green" />
-                            ) : (
-                              <TrendingDown className="h-4 w-4 text-rag-red" />
-                            )}
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>Average risk score across all projects</TooltipContent>
-                    </Tooltip>
+                    <div className="space-y-2 col-span-2 sm:col-span-1">
+                      <p className="text-sm text-muted-foreground">Risk Score</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-2xl font-bold">{stats.avgDangerScore}</p>
+                        {stats.trend === 'positive' ? (
+                          <TrendingUp className="h-4 w-4 text-rag-green" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4 text-rag-red" />
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Portfolio Health</span>
                       <span className="font-medium">
-                        {Math.round((stats.healthyProjects / stats.totalProjects) * 100)}%
+                        {Math.round(stats.performance)}%
                       </span>
                     </div>
                     <Progress 
-                      value={(stats.healthyProjects / stats.totalProjects) * 100}
+                      value={stats.performance}
                       className="h-2"
                     />
                   </div>
 
                   {isExpanded && (
-                    <div className="grid grid-cols-1 gap-4 mt-6 animate-fade-in">
-                      {projects.map((project) => (
-                        <ProjectCard key={project.id} project={project} view="list" />
-                      ))}
-                    </div>
+                    <ManagerProjectsList projects={projects} />
                   )}
                 </div>
               </Card>

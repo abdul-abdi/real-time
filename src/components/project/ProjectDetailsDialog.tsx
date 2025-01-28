@@ -11,6 +11,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
 
 interface ProjectDetailsDialogProps {
   project: Project;
@@ -23,6 +25,8 @@ export const ProjectDetailsDialog = ({
   isOpen,
   onOpenChange,
 }: ProjectDetailsDialogProps) => {
+  const [selectedWeek, setSelectedWeek] = useState(0);
+
   // Enhanced weekly updates with more detailed information
   const weeklyUpdates = [
     { 
@@ -66,6 +70,8 @@ export const ProjectDetailsDialog = ({
       }
     },
   ];
+
+  const currentWeekUpdate = weeklyUpdates[selectedWeek];
 
   // Enhanced trend data with more metrics
   const trendData = [
@@ -154,39 +160,76 @@ export const ProjectDetailsDialog = ({
             </TabsContent>
 
             <TabsContent value="updates" className="space-y-4 p-4">
-              {weeklyUpdates.map((update, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-lg border bg-card"
+              <div className="flex items-center justify-between mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedWeek(prev => Math.min(prev + 1, weeklyUpdates.length - 1))}
+                  disabled={selectedWeek === weeklyUpdates.length - 1}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">{update.week}</h4>
-                    <Badge variant="outline" className={cn(
-                      "capitalize",
-                      update.status === "red" && "border-rag-red text-rag-red",
-                      update.status === "amber" && "border-rag-amber text-rag-amber",
-                      update.status === "green" && "border-rag-green text-rag-green"
-                    )}>
-                      {update.status}
-                    </Badge>
+                  Previous Week
+                </Button>
+                <span className="font-medium">{currentWeekUpdate.week}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedWeek(prev => Math.max(prev - 1, 0))}
+                  disabled={selectedWeek === 0}
+                >
+                  Next Week
+                </Button>
+              </div>
+
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium">{currentWeekUpdate.week}</h4>
+                  <Badge variant="outline" className={cn(
+                    "capitalize",
+                    currentWeekUpdate.status === "red" && "border-rag-red text-rag-red",
+                    currentWeekUpdate.status === "amber" && "border-rag-amber text-rag-amber",
+                    currentWeekUpdate.status === "green" && "border-rag-green text-rag-green"
+                  )}>
+                    {currentWeekUpdate.status}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">{currentWeekUpdate.update}</p>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Completed:</span>
+                    <span className="ml-1 font-medium">{currentWeekUpdate.metrics.completedTasks}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">{update.update}</p>
-                  <div className="grid grid-cols-3 gap-2 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Completed:</span>
-                      <span className="ml-1 font-medium">{update.metrics.completedTasks}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Pending:</span>
-                      <span className="ml-1 font-medium">{update.metrics.pendingTasks}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Blockers:</span>
-                      <span className="ml-1 font-medium">{update.metrics.blockers}</span>
-                    </div>
+                  <div>
+                    <span className="text-muted-foreground">Pending:</span>
+                    <span className="ml-1 font-medium">{currentWeekUpdate.metrics.pendingTasks}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Blockers:</span>
+                    <span className="ml-1 font-medium">{currentWeekUpdate.metrics.blockers}</span>
                   </div>
                 </div>
-              ))}
+              </Card>
+
+              <div className="mt-6">
+                <h4 className="font-medium mb-4">Previous Updates</h4>
+                <div className="space-y-4">
+                  {weeklyUpdates.slice(selectedWeek + 1).map((update, index) => (
+                    <Card key={index} className="p-4 opacity-60">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{update.week}</h4>
+                        <Badge variant="outline" className={cn(
+                          "capitalize",
+                          update.status === "red" && "border-rag-red text-rag-red",
+                          update.status === "amber" && "border-rag-amber text-rag-amber",
+                          update.status === "green" && "border-rag-green text-rag-green"
+                        )}>
+                          {update.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{update.update}</p>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             </TabsContent>
           </ScrollArea>
         </Tabs>
