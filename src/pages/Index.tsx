@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
@@ -11,8 +12,11 @@ import { SettingsSection } from "@/components/sections/SettingsSection";
 import { CustomViewSection } from "@/components/sections/CustomViewSection";
 import { CustomView } from "@/types/customView";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
+import { NotionConfig } from "@/components/notion/NotionConfig";
+import { useNotion } from "@/hooks/useNotion";
 
 const Index = () => {
+  const { isConfigured } = useNotion();
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
   const [activeView, setActiveView] = useState<CustomView | null>(null);
   const [currentView, setCurrentView] = useState<"grid" | "list" | "kanban">(() => {
@@ -63,13 +67,13 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (activeSection === "dashboard") {
+    if (activeSection === "dashboard" && isConfigured) {
       toast({
         title: "Dashboard Updated",
         description: `Showing ${filteredProjects.length} projects`,
       });
     }
-  }, [filteredProjects.length, toast, activeSection]);
+  }, [filteredProjects.length, toast, activeSection, isConfigured]);
 
   const handleViewChange = (view: CustomView | null) => {
     setActiveView(view);
@@ -80,6 +84,14 @@ const Index = () => {
       });
     }
   };
+
+  if (!isConfigured) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center">
+        <NotionConfig />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
