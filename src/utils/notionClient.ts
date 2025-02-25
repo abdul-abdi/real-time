@@ -4,13 +4,13 @@ import { Project } from "@/types/project";
 
 class NotionClient {
   private static instance: NotionClient;
-  private readonly apiKey: string;
+  private _apiKey: string;
+  private _databaseId: string;
   private readonly baseUrl = "https://api.notion.com/v1";
-  private databaseId: string;
 
   private constructor() {
-    this.apiKey = ""; // We'll need to get this from environment variables
-    this.databaseId = ""; // We'll need to get this from environment variables
+    this._apiKey = "";
+    this._databaseId = "";
   }
 
   public static getInstance(): NotionClient {
@@ -21,8 +21,8 @@ class NotionClient {
   }
 
   public setCredentials(apiKey: string, databaseId: string) {
-    this.apiKey = apiKey;
-    this.databaseId = databaseId;
+    this._apiKey = apiKey;
+    this._databaseId = databaseId;
   }
 
   private async fetch(endpoint: string, options: RequestInit = {}) {
@@ -30,7 +30,7 @@ class NotionClient {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${this.apiKey}`,
+        'Authorization': `Bearer ${this._apiKey}`,
         'Notion-Version': '2022-06-28',
         'Content-Type': 'application/json',
       },
@@ -45,11 +45,11 @@ class NotionClient {
   }
 
   public async getDatabase(): Promise<NotionDatabase> {
-    return this.fetch(`/databases/${this.databaseId}`);
+    return this.fetch(`/databases/${this._databaseId}`);
   }
 
   public async getDatabasePages(): Promise<Project[]> {
-    const response = await this.fetch(`/databases/${this.databaseId}/query`, {
+    const response = await this.fetch(`/databases/${this._databaseId}/query`, {
       method: 'POST',
       body: JSON.stringify({
         sorts: [
