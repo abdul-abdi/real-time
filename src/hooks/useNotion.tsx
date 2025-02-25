@@ -37,12 +37,14 @@ export const useNotion = () => {
     queryKey: ["notion-projects"],
     queryFn: () => notionClient.getDatabasePages(),
     enabled: isConfigured,
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch projects",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to fetch projects",
+          variant: "destructive",
+        });
+      },
     },
   });
 
@@ -56,3 +58,4 @@ export const useNotion = () => {
     refetch,
   };
 };
+
