@@ -18,10 +18,8 @@ export const useNotion = () => {
   ) => {
     setIsConfiguring(true);
     try {
-      // Set credentials for all three databases
       notionClient.setCredentials(apiKey, projectsDatabaseId, statusDatabaseId, updatesDatabaseId);
       
-      // Test the connection by fetching the databases
       await Promise.all([
         notionClient.getDatabase(projectsDatabaseId),
         notionClient.getDatabase(statusDatabaseId),
@@ -34,9 +32,19 @@ export const useNotion = () => {
         description: "Successfully connected to Notion databases",
       });
     } catch (error) {
+      let errorMessage = "Failed to connect to Notion";
+      
+      if (error instanceof Error) {
+        if (error.message === "Invalid Notion API key") {
+          errorMessage = "The provided Notion API key is invalid";
+        } else if (error.message.includes("Invalid database ID")) {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Connection Failed",
-        description: error instanceof Error ? error.message : "Failed to connect to Notion",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsConfigured(false);
@@ -51,9 +59,19 @@ export const useNotion = () => {
     enabled: isConfigured,
     meta: {
       onError: (error: Error) => {
+        let errorMessage = "Failed to fetch data from Notion";
+        
+        if (error instanceof Error) {
+          if (error.message === "Invalid Notion API key") {
+            errorMessage = "The provided Notion API key is invalid";
+          } else if (error.message.includes("Invalid database ID")) {
+            errorMessage = error.message;
+          }
+        }
+
         toast({
           title: "Error",
-          description: error.message || "Failed to fetch data from Notion",
+          description: errorMessage,
           variant: "destructive",
         });
       },

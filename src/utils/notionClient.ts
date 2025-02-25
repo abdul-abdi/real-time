@@ -1,4 +1,3 @@
-
 import { 
   NotionError, 
   NotionDatabase, 
@@ -54,6 +53,9 @@ class NotionClient {
 
     if (!response.ok) {
       const error: NotionError = await response.json();
+      if (response.status === 401) {
+        throw new Error("Invalid Notion API key");
+      }
       throw new Error(`Notion API Error: ${error.message}`);
     }
 
@@ -61,14 +63,36 @@ class NotionClient {
   }
 
   public async getDatabase(databaseId: string): Promise<NotionDatabase> {
-    return this.fetch(`/databases/${databaseId}`);
+    try {
+      return await this.fetch(`/databases/${databaseId}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "Invalid Notion API key") {
+          throw error;
+        }
+        // If it's not an API key error, it's likely a database ID issue
+        throw new Error(`Invalid database ID: ${databaseId}`);
+      }
+      throw error;
+    }
   }
 
   private async queryDatabase(databaseId: string, body: object = {}): Promise<any> {
-    return this.fetch(`/databases/${databaseId}/query`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
+    try {
+      return await this.fetch(`/databases/${databaseId}/query`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "Invalid Notion API key") {
+          throw error;
+        }
+        // If it's not an API key error, it's likely a database ID issue
+        throw new Error(`Invalid database ID: ${databaseId}`);
+      }
+      throw error;
+    }
   }
 
   private transformProjectUpdate(page: any): NotionProjectUpdate {
@@ -133,24 +157,26 @@ class NotionClient {
 
   public async getAllData() {
     try {
-      // Fetch all data in parallel
+      await Promise.all([
+        this.getDatabase(this._projectsDatabaseId),
+        this.getDatabase(this._statusDatabaseId),
+        this.getDatabase(this._updatesDatabaseId),
+      ]);
+
       const [projectsResponse, statusResponse, updatesResponse] = await Promise.all([
         this.queryDatabase(this._projectsDatabaseId),
         this.queryDatabase(this._statusDatabaseId),
         this.queryDatabase(this._updatesDatabaseId),
       ]);
 
-      // Transform the data
       const projects = projectsResponse.results.map(this.transformProject);
       const statuses = statusResponse.results.map(this.transformProjectStatus);
       const updates = updatesResponse.results.map(this.transformProjectUpdate);
 
-      // Link updates to their project statuses
       statuses.forEach(status => {
         status.updates = updates.filter(update => update.projectStatusId === status.id);
       });
 
-      // Return the complete data structure
       return {
         projects,
         statuses,
@@ -164,4 +190,3 @@ class NotionClient {
 }
 
 export const notionClient = NotionClient.getInstance();
-
