@@ -1,4 +1,12 @@
 
+import { 
+  NotionError, 
+  NotionDatabase, 
+  NotionProjectUpdate, 
+  NotionProjectStatus 
+} from "@/types/notion";
+import { Project, RAGStatus } from "@/types/project";
+
 class NotionClient {
   private static instance: NotionClient;
   private _apiKey: string;
@@ -156,3 +164,4 @@ class NotionClient {
 }
 
 export const notionClient = NotionClient.getInstance();
+

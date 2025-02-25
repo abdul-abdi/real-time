@@ -1,3 +1,9 @@
+
+export interface NotionError {
+  code: string;
+  message: string;
+}
+
 export interface NotionDatabase {
   id: string;
   title: string;
@@ -7,11 +13,6 @@ export interface NotionDatabase {
 export interface NotionPage {
   id: string;
   properties: Record<string, unknown>;
-}
-
-export interface NotionError {
-  code: string;
-  message: string;
 }
 
 export interface NotionProjectUpdate {
