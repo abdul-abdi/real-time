@@ -1,9 +1,12 @@
+
 import React from "react";
 import { FilterBar } from "@/components/FilterBar";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
 import { ProjectsGrid } from "@/components/dashboard/ProjectsGrid";
+import { NotionConfig } from "@/components/notion/NotionConfig";
 import { Project } from "@/types/project";
+import { useNotion } from "@/hooks/useNotion";
 
 interface DashboardContentProps {
   filteredProjects: Project[];
@@ -37,6 +40,8 @@ export const DashboardContent = ({
   sortBy,
   selectedDepartments,
 }: DashboardContentProps) => {
+  const { isConfigured } = useNotion();
+
   return (
     <>
       <FilterBar
@@ -57,6 +62,8 @@ export const DashboardContent = ({
           ]}
         />
         
+        {!isConfigured && <NotionConfig />}
+
         <div className="mb-8">
           <h2 className="text-3xl font-bold tracking-tight mb-6 animate-fade-in">
             Project Overview
