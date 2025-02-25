@@ -10,16 +10,28 @@ export const useNotion = () => {
   const [isConfigured, setIsConfigured] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
 
-  const configureNotion = async (apiKey: string, databaseId: string) => {
+  const configureNotion = async (
+    apiKey: string,
+    projectsDatabaseId: string,
+    statusDatabaseId: string,
+    updatesDatabaseId: string
+  ) => {
     setIsConfiguring(true);
     try {
-      notionClient.setCredentials(apiKey, databaseId);
-      // Test the connection by fetching the database
-      await notionClient.getDatabase();
+      // Set credentials for all three databases
+      notionClient.setCredentials(apiKey, projectsDatabaseId, statusDatabaseId, updatesDatabaseId);
+      
+      // Test the connection by fetching the databases
+      await Promise.all([
+        notionClient.getDatabase(projectsDatabaseId),
+        notionClient.getDatabase(statusDatabaseId),
+        notionClient.getDatabase(updatesDatabaseId),
+      ]);
+
       setIsConfigured(true);
       toast({
         title: "Notion Connected",
-        description: "Successfully connected to Notion database",
+        description: "Successfully connected to Notion databases",
       });
     } catch (error) {
       toast({
@@ -33,15 +45,15 @@ export const useNotion = () => {
     }
   };
 
-  const { data: projects, isLoading, error, refetch } = useQuery({
-    queryKey: ["notion-projects"],
-    queryFn: () => notionClient.getDatabasePages(),
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["notion-data"],
+    queryFn: () => notionClient.getAllData(),
     enabled: isConfigured,
     meta: {
       onError: (error: Error) => {
         toast({
           title: "Error",
-          description: error.message || "Failed to fetch projects",
+          description: error.message || "Failed to fetch data from Notion",
           variant: "destructive",
         });
       },
@@ -49,7 +61,9 @@ export const useNotion = () => {
   });
 
   return {
-    projects,
+    projects: data?.projects || [],
+    projectStatuses: data?.statuses || [],
+    projectUpdates: data?.updates || [],
     isLoading,
     error,
     isConfigured,
@@ -58,4 +72,3 @@ export const useNotion = () => {
     refetch,
   };
 };
-
