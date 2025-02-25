@@ -7,6 +7,7 @@ import { ProjectsGrid } from "@/components/dashboard/ProjectsGrid";
 import { NotionConfig } from "@/components/notion/NotionConfig";
 import { Project } from "@/types/project";
 import { useNotion } from "@/hooks/useNotion";
+import { Loader } from "lucide-react";
 
 interface DashboardContentProps {
   filteredProjects: Project[];
@@ -40,7 +41,7 @@ export const DashboardContent = ({
   sortBy,
   selectedDepartments,
 }: DashboardContentProps) => {
-  const { isConfigured } = useNotion();
+  const { isConfigured, isLoading } = useNotion();
 
   return (
     <>
@@ -64,18 +65,29 @@ export const DashboardContent = ({
         
         {!isConfigured && <NotionConfig />}
 
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold tracking-tight mb-6 animate-fade-in">
-            Project Overview
-          </h2>
-          
-          <StatsOverview {...metrics} />
-        </div>
+        {isConfigured && isLoading && (
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+            <Loader className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-lg text-muted-foreground">Loading projects from Notion...</p>
+          </div>
+        )}
 
-        <ProjectsGrid
-          projects={filteredProjects}
-          currentView={currentView}
-        />
+        {isConfigured && !isLoading && (
+          <>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold tracking-tight mb-6 animate-fade-in">
+                Project Overview
+              </h2>
+              
+              <StatsOverview {...metrics} />
+            </div>
+
+            <ProjectsGrid
+              projects={filteredProjects}
+              currentView={currentView}
+            />
+          </>
+        )}
       </div>
     </>
   );

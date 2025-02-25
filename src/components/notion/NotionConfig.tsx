@@ -4,11 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNotion } from "@/hooks/useNotion";
+import { Loader } from "lucide-react";
 
 export const NotionConfig = () => {
   const [apiKey, setApiKey] = useState("");
   const [databaseId, setDatabaseId] = useState("");
-  const { configureNotion, isConfigured } = useNotion();
+  const { configureNotion, isConfigured, isConfiguring } = useNotion();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +36,7 @@ export const NotionConfig = () => {
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="Enter your Notion API key"
+            disabled={isConfiguring}
           />
         </div>
         <div className="space-y-2">
@@ -46,10 +48,22 @@ export const NotionConfig = () => {
             value={databaseId}
             onChange={(e) => setDatabaseId(e.target.value)}
             placeholder="Enter your Notion database ID"
+            disabled={isConfiguring}
           />
         </div>
-        <Button type="submit" className="w-full">
-          Connect to Notion
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={isConfiguring || !apiKey || !databaseId}
+        >
+          {isConfiguring ? (
+            <>
+              <Loader className="mr-2 h-4 w-4 animate-spin" />
+              Connecting...
+            </>
+          ) : (
+            "Connect to Notion"
+          )}
         </Button>
       </form>
     </Card>
