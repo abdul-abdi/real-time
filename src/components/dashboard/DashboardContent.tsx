@@ -76,7 +76,7 @@ export const DashboardContent = ({
         {isConfigured && !isLoading && (
           <>
             {isUsingFallbackData && (
-              <Alert variant="warning" className="mb-6">
+              <Alert variant="destructive" className="mb-6">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   Could not connect to Notion API. Showing demo data instead. 
