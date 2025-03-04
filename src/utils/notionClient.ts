@@ -34,6 +34,13 @@ class NotionClient {
     statusDatabaseId: string,
     updatesDatabaseId: string
   ) {
+    console.log("Setting Notion credentials:", { 
+      apiKey: apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : "undefined", 
+      projectsDatabaseId,
+      statusDatabaseId,
+      updatesDatabaseId
+    });
+    
     this._apiKey = apiKey;
     this._projectsDatabaseId = projectsDatabaseId;
     this._statusDatabaseId = statusDatabaseId;
@@ -41,31 +48,47 @@ class NotionClient {
   }
 
   private async fetch(endpoint: string, options: RequestInit = {}) {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...options,
-      headers: {
-        ...options.headers,
-        'Authorization': `Bearer ${this._apiKey}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-    });
+    const url = `${this.baseUrl}${endpoint}`;
+    console.log(`Making Notion API request to: ${url}`);
+    
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Authorization': `Bearer ${this._apiKey}`,
+          'Notion-Version': '2022-06-28',
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      const error: NotionError = await response.json();
-      if (response.status === 401) {
-        throw new Error("Invalid Notion API key");
+      console.log(`Notion API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorData: NotionError = await response.json();
+        console.error("Notion API error:", errorData);
+        
+        if (response.status === 401) {
+          throw new Error("Invalid Notion API key");
+        }
+        throw new Error(`Notion API Error: ${errorData.message}`);
       }
-      throw new Error(`Notion API Error: ${error.message}`);
-    }
 
-    return response.json();
+      return response.json();
+    } catch (error) {
+      console.error("Fetch error:", error);
+      throw error;
+    }
   }
 
   public async getDatabase(databaseId: string): Promise<NotionDatabase> {
+    console.log(`Getting database with ID: ${databaseId}`);
     try {
-      return await this.fetch(`/databases/${databaseId}`);
+      const result = await this.fetch(`/databases/${databaseId}`);
+      console.log(`Successfully retrieved database: ${databaseId}`);
+      return result;
     } catch (error) {
+      console.error(`Error getting database ${databaseId}:`, error);
       if (error instanceof Error) {
         if (error.message === "Invalid Notion API key") {
           throw error;
@@ -78,12 +101,16 @@ class NotionClient {
   }
 
   private async queryDatabase(databaseId: string, body: object = {}): Promise<any> {
+    console.log(`Querying database with ID: ${databaseId}`);
     try {
-      return await this.fetch(`/databases/${databaseId}/query`, {
+      const result = await this.fetch(`/databases/${databaseId}/query`, {
         method: 'POST',
         body: JSON.stringify(body),
       });
+      console.log(`Successfully queried database: ${databaseId}`);
+      return result;
     } catch (error) {
+      console.error(`Error querying database ${databaseId}:`, error);
       if (error instanceof Error) {
         if (error.message === "Invalid Notion API key") {
           throw error;
@@ -156,12 +183,35 @@ class NotionClient {
   }
 
   public async getAllData() {
+    console.log("Getting all data from Notion");
     try {
-      await Promise.all([
-        this.getDatabase(this._projectsDatabaseId),
-        this.getDatabase(this._statusDatabaseId),
-        this.getDatabase(this._updatesDatabaseId),
-      ]);
+      console.log("Checking database connections...");
+      
+      try {
+        await this.getDatabase(this._projectsDatabaseId);
+        console.log("Projects database connection successful");
+      } catch (error) {
+        console.error("Projects database connection failed:", error);
+        throw error;
+      }
+      
+      try {
+        await this.getDatabase(this._statusDatabaseId);
+        console.log("Status database connection successful");
+      } catch (error) {
+        console.error("Status database connection failed:", error);
+        throw error;
+      }
+      
+      try {
+        await this.getDatabase(this._updatesDatabaseId);
+        console.log("Updates database connection successful");
+      } catch (error) {
+        console.error("Updates database connection failed:", error);
+        throw error;
+      }
+
+      console.log("All database connections verified, querying data...");
 
       const [projectsResponse, statusResponse, updatesResponse] = await Promise.all([
         this.queryDatabase(this._projectsDatabaseId),
@@ -176,6 +226,8 @@ class NotionClient {
       statuses.forEach(status => {
         status.updates = updates.filter(update => update.projectStatusId === status.id);
       });
+
+      console.log(`Data fetched successfully: ${projects.length} projects, ${statuses.length} statuses, ${updates.length} updates`);
 
       return {
         projects,
