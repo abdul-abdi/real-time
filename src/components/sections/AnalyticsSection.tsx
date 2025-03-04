@@ -18,6 +18,18 @@ import {
 } from "recharts";
 import { ChartPie, TrendingUp, Activity, AlertTriangle } from "lucide-react";
 import { useNotion } from "@/hooks/useNotion";
+import { Department, Project, RAGStatus } from "@/types/project";
+
+// Define types for our department statistics
+interface DepartmentStat {
+  name: string;
+  total: number;
+  red: number;
+  amber: number;
+  green: number;
+  avgRisk: number;
+  projects: Project[];
+}
 
 export const AnalyticsSection = () => {
   const { projects } = useNotion();
@@ -42,7 +54,7 @@ export const AnalyticsSection = () => {
       acc[dept].avgRisk += project.dangerScore;
     });
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, DepartmentStat>);
 
   // Calculate final averages
   Object.values(departmentStats).forEach(stat => {
@@ -55,7 +67,7 @@ export const AnalyticsSection = () => {
   const ragDistribution = projects.reduce((acc, project) => {
     acc[project.ragStatus] = (acc[project.ragStatus] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<RAGStatus, number>);
 
   const pieData = Object.entries(ragDistribution).map(([name, value]) => ({
     name,
@@ -176,7 +188,7 @@ export const AnalyticsSection = () => {
           </div>
           <ScrollArea className="h-[300px]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {departmentData.map((dept) => (
+              {departmentData.map((dept: DepartmentStat) => (
                 <div
                   key={dept.name}
                   className="p-4 rounded-lg border bg-card hover:shadow-md transition-all duration-200"

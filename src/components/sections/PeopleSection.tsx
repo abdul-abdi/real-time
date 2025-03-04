@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,12 +23,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useNotion } from "@/hooks/useNotion";
 
+type ManagerStats = {
+  totalProjects: number;
+  criticalProjects: number;
+  healthyProjects: number;
+  avgDangerScore: string;
+  trend: 'positive' | 'negative';
+  performance: number;
+};
+
 export const PeopleSection = () => {
   const { projects } = useNotion();
   const [sortBy, setSortBy] = useState<"name" | "projects" | "risk">("name");
   const [expandedManagers, setExpandedManagers] = useState<string[]>([]);
 
-  const projectsByOwner = projects.reduce((acc, project) => {
+  const projectsByOwner: Record<string, Project[]> = projects.reduce((acc, project) => {
     project.owners.forEach(owner => {
       if (!acc[owner]) {
         acc[owner] = [];
@@ -37,7 +47,7 @@ export const PeopleSection = () => {
     return acc;
   }, {} as Record<string, Project[]>);
 
-  const getManagerStats = (projects: Project[]) => {
+  const getManagerStats = (projects: Project[]): ManagerStats => {
     const totalProjects = projects.length;
     const criticalProjects = projects.filter(p => p.dangerScore >= 7).length;
     const healthyProjects = projects.filter(p => p.dangerScore < 4).length;
@@ -108,8 +118,8 @@ export const PeopleSection = () => {
       
       <ScrollArea className="h-[calc(100vh-12rem)]">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-1">
-          {sortedManagers.map(([owner, projects]) => {
-            const stats = getManagerStats(projects);
+          {sortedManagers.map(([owner, ownerProjects]) => {
+            const stats = getManagerStats(ownerProjects);
             const isExpanded = expandedManagers.includes(owner);
             const initials = owner
               .split(' ')
@@ -192,7 +202,7 @@ export const PeopleSection = () => {
                   </div>
 
                   {isExpanded && (
-                    <ManagerProjectsList projects={projects} />
+                    <ManagerProjectsList projects={ownerProjects} />
                   )}
                 </div>
               </Card>
