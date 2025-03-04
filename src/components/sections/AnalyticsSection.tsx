@@ -57,7 +57,7 @@ export const AnalyticsSection = () => {
   }, {} as Record<string, DepartmentStat>);
 
   // Calculate final averages
-  Object.values(departmentStats).forEach(stat => {
+  Object.values(departmentStats).forEach((stat: DepartmentStat) => {
     stat.avgRisk = +(stat.avgRisk / stat.total).toFixed(1);
   });
 
