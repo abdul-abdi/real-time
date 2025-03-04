@@ -11,6 +11,8 @@ export const useNotion = () => {
   const [isConfigured, setIsConfigured] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [useFallbackData, setUseFallbackData] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [validationInProgress, setValidationInProgress] = useState(false);
 
   // Pre-define Notion credentials
   const NOTION_API_KEY = "secret_hpqJVYnkGqJG5OcPVQurhgxyFkc0QphBLlYnWQD9tu8";
@@ -28,6 +30,121 @@ export const useNotion = () => {
     });
   }, []);
 
+  // Validate a database ID
+  const validateDatabaseId = async (databaseId: string, label: string): Promise<{valid: boolean, error?: string}> => {
+    try {
+      console.log(`Validating ${label} database (${databaseId})...`);
+      await notionClient.getDatabase(databaseId);
+      console.log(`✅ ${label} database (${databaseId}) is valid`);
+      return { valid: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Invalid ${label} database (${databaseId}): ${errorMessage}`);
+      return { 
+        valid: false, 
+        error: `Invalid ${label} database (${databaseId}): ${errorMessage}`
+      };
+    }
+  };
+
+  // Validate API key by making a request
+  const validateApiKey = async (apiKey: string): Promise<{valid: boolean, error?: string}> => {
+    try {
+      console.log("Validating Notion API key...");
+      // Use notionClient to make a simple request that only requires API key
+      const tempClient = notionClient;
+      tempClient.setCredentials(apiKey, PROJECTS_DATABASE_ID, STATUS_DATABASE_ID, UPDATES_DATABASE_ID);
+      
+      // Try to list users, which requires valid authentication
+      const response = await fetch("https://api.notion.com/v1/users", {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Notion-Version': '2022-06-28',
+        }
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(`API key validation failed: ${data.message || response.statusText}`);
+      }
+      
+      console.log("✅ Notion API key is valid");
+      return { valid: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ Invalid Notion API key: ${errorMessage}`);
+      return { 
+        valid: false, 
+        error: `Invalid Notion API key: ${errorMessage}` 
+      };
+    }
+  };
+
+  // Validate all credentials
+  const validateCredentials = async (
+    apiKey: string,
+    projectsDatabaseId: string,
+    statusDatabaseId: string,
+    updatesDatabaseId: string
+  ) => {
+    setValidationInProgress(true);
+    setValidationErrors([]);
+    const errors: string[] = [];
+    
+    try {
+      // Set credentials for validation
+      notionClient.setCredentials(apiKey, projectsDatabaseId, statusDatabaseId, updatesDatabaseId);
+      
+      // Validate API key first
+      const apiKeyResult = await validateApiKey(apiKey);
+      if (!apiKeyResult.valid && apiKeyResult.error) {
+        errors.push(apiKeyResult.error);
+        // If API key is invalid, no need to check databases
+        setValidationErrors(errors);
+        setValidationInProgress(false);
+        return errors;
+      }
+      
+      // Validate database IDs in parallel
+      const [projectsResult, statusResult, updatesResult] = await Promise.allSettled([
+        validateDatabaseId(projectsDatabaseId, "Projects"),
+        validateDatabaseId(statusDatabaseId, "Status"),
+        validateDatabaseId(updatesDatabaseId, "Updates")
+      ]);
+      
+      if (projectsResult.status === 'rejected' || (projectsResult.status === 'fulfilled' && !projectsResult.value.valid)) {
+        const error = projectsResult.status === 'rejected' 
+          ? projectsResult.reason.message 
+          : projectsResult.value.error;
+        errors.push(error);
+      }
+      
+      if (statusResult.status === 'rejected' || (statusResult.status === 'fulfilled' && !statusResult.value.valid)) {
+        const error = statusResult.status === 'rejected' 
+          ? statusResult.reason.message 
+          : statusResult.value.error;
+        errors.push(error);
+      }
+      
+      if (updatesResult.status === 'rejected' || (updatesResult.status === 'fulfilled' && !updatesResult.value.valid)) {
+        const error = updatesResult.status === 'rejected' 
+          ? updatesResult.reason.message 
+          : updatesResult.value.error;
+        errors.push(error);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        errors.push(error.message);
+      } else {
+        errors.push('Unknown validation error occurred');
+      }
+    }
+    
+    setValidationErrors(errors);
+    setValidationInProgress(false);
+    return errors;
+  };
+
   // Auto-configure Notion on component mount
   useEffect(() => {
     console.log("Attempting to auto-configure Notion client");
@@ -42,17 +159,19 @@ export const useNotion = () => {
   ) => {
     console.log("Starting Notion configuration");
     setIsConfiguring(true);
+    setValidationErrors([]);
     
     try {
       console.log("Setting Notion client credentials");
       notionClient.setCredentials(apiKey, projectsDatabaseId, statusDatabaseId, updatesDatabaseId);
       
       console.log("Testing connections to databases");
-      await Promise.all([
-        notionClient.getDatabase(projectsDatabaseId),
-        notionClient.getDatabase(statusDatabaseId),
-        notionClient.getDatabase(updatesDatabaseId),
-      ]);
+      // Validate all credentials
+      const errors = await validateCredentials(apiKey, projectsDatabaseId, statusDatabaseId, updatesDatabaseId);
+      
+      if (errors.length > 0) {
+        throw new Error(`Validation failed: ${errors.join(', ')}`);
+      }
 
       console.log("All database connections successful, configuration complete");
       setIsConfigured(true);
@@ -66,18 +185,8 @@ export const useNotion = () => {
       console.error("Notion configuration error:", error);
       
       if (error instanceof Error) {
-        if (error.message === "Invalid Notion API key") {
-          errorMessage = "The provided Notion API key is invalid";
-          console.error("Invalid API key error");
-        } else if (error.message.includes("Invalid database ID")) {
-          errorMessage = error.message;
-          console.error("Invalid database ID error:", error.message);
-        } else if (error.message.includes("Failed to fetch")) {
-          errorMessage = "Network error: Could not reach Notion API";
-          console.error("Network error - Failed to fetch");
-        } else {
-          console.error("Other Notion error:", error.message);
-        }
+        errorMessage = error.message;
+        console.error("Error details:", errorMessage);
       }
       
       toast({
@@ -159,7 +268,8 @@ export const useNotion = () => {
     isLoading,
     useFallbackData,
     hasData: !!data,
-    errorPresent: !!error
+    errorPresent: !!error,
+    validationErrors
   });
 
   return {
@@ -172,6 +282,9 @@ export const useNotion = () => {
     isConfiguring,
     configureNotion,
     refetch,
-    isUsingFallbackData: useFallbackData
+    isUsingFallbackData: useFallbackData,
+    validationErrors,
+    validationInProgress,
+    validateCredentials
   };
 };

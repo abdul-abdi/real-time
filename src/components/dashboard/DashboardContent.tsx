@@ -42,7 +42,7 @@ export const DashboardContent = ({
   sortBy,
   selectedDepartments,
 }: DashboardContentProps) => {
-  const { isConfigured, isLoading, isUsingFallbackData } = useNotion();
+  const { isConfigured, isLoading, isUsingFallbackData, validationErrors } = useNotion();
 
   return (
     <>
@@ -80,6 +80,16 @@ export const DashboardContent = ({
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   Could not connect to Notion API. Showing demo data instead. 
+                  {validationErrors && validationErrors.length > 0 && (
+                    <div className="mt-2">
+                      <strong>Connection errors:</strong>
+                      <ul className="list-disc pl-5 mt-1 text-sm">
+                        {validationErrors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <button 
                     className="text-primary hover:underline ml-2"
                     onClick={() => window.location.reload()}
