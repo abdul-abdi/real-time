@@ -1,4 +1,4 @@
-import { mockProjects } from "@/data/mockProjects";
+
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -17,10 +17,13 @@ import {
   Legend,
 } from "recharts";
 import { ChartPie, TrendingUp, Activity, AlertTriangle } from "lucide-react";
+import { useNotion } from "@/hooks/useNotion";
 
 export const AnalyticsSection = () => {
+  const { projects } = useNotion();
+
   // Calculate department statistics
-  const departmentStats = mockProjects.reduce((acc, project) => {
+  const departmentStats = projects.reduce((acc, project) => {
     project.departments.forEach(dept => {
       if (!acc[dept]) {
         acc[dept] = {
@@ -49,7 +52,7 @@ export const AnalyticsSection = () => {
   const departmentData = Object.values(departmentStats);
 
   // RAG status distribution for pie chart
-  const ragDistribution = mockProjects.reduce((acc, project) => {
+  const ragDistribution = projects.reduce((acc, project) => {
     acc[project.ragStatus] = (acc[project.ragStatus] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);

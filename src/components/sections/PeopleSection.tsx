@@ -1,12 +1,10 @@
 import { useState, useMemo } from "react";
-import { mockProjects } from "@/data/mockProjects";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Project } from "@/types/project";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
-  UserRound, 
   ArrowUpDown,
   TrendingUp, 
   TrendingDown 
@@ -22,12 +20,14 @@ import {
 import { ManagerProjectsList } from "../managers/ManagerProjectsList";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useNotion } from "@/hooks/useNotion";
 
 export const PeopleSection = () => {
+  const { projects } = useNotion();
   const [sortBy, setSortBy] = useState<"name" | "projects" | "risk">("name");
   const [expandedManagers, setExpandedManagers] = useState<string[]>([]);
 
-  const projectsByOwner = mockProjects.reduce((acc, project) => {
+  const projectsByOwner = projects.reduce((acc, project) => {
     project.owners.forEach(owner => {
       if (!acc[owner]) {
         acc[owner] = [];

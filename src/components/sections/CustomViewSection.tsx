@@ -1,17 +1,19 @@
+
 import { FilterBar } from "@/components/FilterBar";
 import { ProjectCard } from "@/components/ProjectCard";
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
-import { mockProjects } from "@/data/mockProjects";
 import { CustomView } from "@/types/customView";
+import { useNotion } from "@/hooks/useNotion";
 
 interface CustomViewSectionProps {
   view: CustomView;
 }
 
 export const CustomViewSection = ({ view }: CustomViewSectionProps) => {
-  const viewProjects = mockProjects.filter(p => view.projects.includes(p.id));
+  const { projects: allProjects } = useNotion();
+  const viewProjects = allProjects.filter(p => view.projects.includes(p.id));
   
   const {
     searchQuery,

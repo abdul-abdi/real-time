@@ -2,7 +2,6 @@
 import React from "react";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
-import { mockProjects } from "@/data/mockProjects";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +15,7 @@ import { NotionConfig } from "@/components/notion/NotionConfig";
 import { useNotion } from "@/hooks/useNotion";
 
 const Index = () => {
-  const { isConfigured } = useNotion();
+  const { isConfigured, projects } = useNotion();
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
   const [activeView, setActiveView] = useState<CustomView | null>(null);
   const [currentView, setCurrentView] = useState<"grid" | "list" | "kanban">(() => {
@@ -40,15 +39,15 @@ const Index = () => {
     selectedDepartments,
     setSelectedDepartments,
     filteredProjects,
-  } = useProjectFilters(mockProjects);
+  } = useProjectFilters(projects);
 
   const { toast } = useToast();
 
   const metrics = {
-    totalProjects: mockProjects.length,
-    criticalIssues: mockProjects.filter(p => p.ragStatus === "red").length,
-    healthyProjects: mockProjects.filter(p => p.ragStatus === "green").length,
-    recentUpdates: mockProjects.filter(p => {
+    totalProjects: projects.length,
+    criticalIssues: projects.filter(p => p.ragStatus === "red").length,
+    healthyProjects: projects.filter(p => p.ragStatus === "green").length,
+    recentUpdates: projects.filter(p => {
       const lastUpdated = new Date(p.lastUpdated);
       const now = new Date();
       return now.getTime() - lastUpdated.getTime() < 24 * 60 * 60 * 1000;
