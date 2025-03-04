@@ -20,6 +20,7 @@ export const NotionConfig = () => {
     }
   };
 
+  // This component is no longer shown by default since we've hardcoded credentials
   if (isConfigured) {
     return null;
   }

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { notionClient } from "@/utils/notionClient";
 import { Project } from "@/types/project";
@@ -10,11 +10,22 @@ export const useNotion = () => {
   const [isConfigured, setIsConfigured] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
 
+  // Pre-define Notion credentials
+  const NOTION_API_KEY = "secret_hpqJVYnkGqJG5OcPVQurhgxyFkc0QphBLlYnWQD9tu8";
+  const PROJECTS_DATABASE_ID = "92c116a11c6b404daaca6dcfe7e92feb";
+  const STATUS_DATABASE_ID = "d29779d059294f768e5c7c1f52d7f03d";
+  const UPDATES_DATABASE_ID = "a7fb3b18296646038b5e2f524ed6c9f9";
+
+  // Auto-configure Notion on component mount
+  useEffect(() => {
+    configureNotion();
+  }, []);
+
   const configureNotion = async (
-    apiKey: string,
-    projectsDatabaseId: string,
-    statusDatabaseId: string,
-    updatesDatabaseId: string
+    apiKey = NOTION_API_KEY,
+    projectsDatabaseId = PROJECTS_DATABASE_ID,
+    statusDatabaseId = STATUS_DATABASE_ID,
+    updatesDatabaseId = UPDATES_DATABASE_ID
   ) => {
     setIsConfiguring(true);
     try {

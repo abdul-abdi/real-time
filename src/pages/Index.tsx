@@ -11,11 +11,11 @@ import { SettingsSection } from "@/components/sections/SettingsSection";
 import { CustomViewSection } from "@/components/sections/CustomViewSection";
 import { CustomView } from "@/types/customView";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
-import { NotionConfig } from "@/components/notion/NotionConfig";
 import { useNotion } from "@/hooks/useNotion";
+import { Loader } from "lucide-react";
 
 const Index = () => {
-  const { isConfigured, projects } = useNotion();
+  const { isConfigured, isLoading, projects } = useNotion();
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
   const [activeView, setActiveView] = useState<CustomView | null>(null);
   const [currentView, setCurrentView] = useState<"grid" | "list" | "kanban">(() => {
@@ -84,10 +84,15 @@ const Index = () => {
     }
   };
 
-  if (!isConfigured) {
+  // Show loading screen while connecting to Notion
+  if (!isConfigured || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center">
-        <NotionConfig />
+        <div className="flex flex-col items-center space-y-4">
+          <Loader className="h-12 w-12 animate-spin text-primary" />
+          <h2 className="text-xl font-medium">Connecting to Notion...</h2>
+          <p className="text-muted-foreground">Loading your project data</p>
+        </div>
       </div>
     );
   }
