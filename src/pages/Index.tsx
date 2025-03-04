@@ -15,7 +15,7 @@ import { useNotion } from "@/hooks/useNotion";
 import { Loader } from "lucide-react";
 
 const Index = () => {
-  const { isConfigured, isLoading, projects } = useNotion();
+  const { isConfigured, isLoading, projects, isUsingFallbackData } = useNotion();
   const [activeSection, setActiveSection] = useState<"dashboard" | "people" | "analytics" | "settings">("dashboard");
   const [activeView, setActiveView] = useState<CustomView | null>(null);
   const [currentView, setCurrentView] = useState<"grid" | "list" | "kanban">(() => {
@@ -68,11 +68,11 @@ const Index = () => {
   useEffect(() => {
     if (activeSection === "dashboard" && isConfigured) {
       toast({
-        title: "Dashboard Updated",
+        title: isUsingFallbackData ? "Dashboard Updated (Demo Data)" : "Dashboard Updated",
         description: `Showing ${filteredProjects.length} projects`,
       });
     }
-  }, [filteredProjects.length, toast, activeSection, isConfigured]);
+  }, [filteredProjects.length, toast, activeSection, isConfigured, isUsingFallbackData]);
 
   const handleViewChange = (view: CustomView | null) => {
     setActiveView(view);
@@ -84,14 +84,16 @@ const Index = () => {
     }
   };
 
-  // Show loading screen while connecting to Notion
+  // Show loading screen while connecting to Notion or loading data
   if (!isConfigured || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <Loader className="h-12 w-12 animate-spin text-primary" />
-          <h2 className="text-xl font-medium">Connecting to Notion...</h2>
-          <p className="text-muted-foreground">Loading your project data</p>
+          <h2 className="text-xl font-medium">Loading Dashboard...</h2>
+          <p className="text-muted-foreground">
+            {!isConfigured ? "Connecting to Notion" : "Loading your project data"}
+          </p>
         </div>
       </div>
     );

@@ -4,11 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { notionClient } from "@/utils/notionClient";
 import { Project } from "@/types/project";
 import { useToast } from "@/hooks/use-toast";
+import { mockProjects } from "@/data/mockProjects";
 
 export const useNotion = () => {
   const { toast } = useToast();
   const [isConfigured, setIsConfigured] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
+  const [useFallbackData, setUseFallbackData] = useState(false);
 
   // Pre-define Notion credentials
   const NOTION_API_KEY = "secret_hpqJVYnkGqJG5OcPVQurhgxyFkc0QphBLlYnWQD9tu8";
@@ -54,6 +56,7 @@ export const useNotion = () => {
 
       console.log("All database connections successful, configuration complete");
       setIsConfigured(true);
+      setUseFallbackData(false);
       toast({
         title: "Notion Connected",
         description: "Successfully connected to Notion databases",
@@ -69,6 +72,9 @@ export const useNotion = () => {
         } else if (error.message.includes("Invalid database ID")) {
           errorMessage = error.message;
           console.error("Invalid database ID error:", error.message);
+        } else if (error.message.includes("Failed to fetch")) {
+          errorMessage = "Network error: Could not reach Notion API";
+          console.error("Network error - Failed to fetch");
         } else {
           console.error("Other Notion error:", error.message);
         }
@@ -79,7 +85,16 @@ export const useNotion = () => {
         description: errorMessage,
         variant: "destructive",
       });
-      setIsConfigured(false);
+      
+      // Activate fallback mode and set configured to allow the app to proceed
+      console.log("Activating fallback data mode due to Notion connection failure");
+      setUseFallbackData(true);
+      setIsConfigured(true);
+      
+      toast({
+        title: "Using Demo Data",
+        description: "Continuing with demo data since Notion connection failed",
+      });
     } finally {
       console.log("Configuration attempt completed, setting isConfiguring to false");
       setIsConfiguring(false);
@@ -88,8 +103,22 @@ export const useNotion = () => {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["notion-data"],
-    queryFn: () => {
+    queryFn: async () => {
       console.log("Executing query function to fetch notion data");
+      
+      if (useFallbackData) {
+        console.log("Using fallback mock data instead of real Notion data");
+        
+        // Create a simulated delay to mimic a network request
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        return {
+          projects: mockProjects,
+          statuses: [],
+          updates: [],
+        };
+      }
+      
       return notionClient.getAllData();
     },
     enabled: isConfigured,
@@ -103,6 +132,8 @@ export const useNotion = () => {
             errorMessage = "The provided Notion API key is invalid";
           } else if (error.message.includes("Invalid database ID")) {
             errorMessage = error.message;
+          } else if (error.message.includes("Failed to fetch")) {
+            errorMessage = "Network error: Could not reach Notion API";
           }
         }
 
@@ -111,6 +142,13 @@ export const useNotion = () => {
           description: errorMessage,
           variant: "destructive",
         });
+        
+        // If we encounter an error during data fetching, switch to fallback data
+        if (!useFallbackData) {
+          console.log("Switching to fallback data after query error");
+          setUseFallbackData(true);
+          refetch();
+        }
       },
     },
   });
@@ -119,6 +157,7 @@ export const useNotion = () => {
     isConfigured,
     isConfiguring,
     isLoading,
+    useFallbackData,
     hasData: !!data,
     errorPresent: !!error
   });
@@ -133,5 +172,6 @@ export const useNotion = () => {
     isConfiguring,
     configureNotion,
     refetch,
+    isUsingFallbackData: useFallbackData
   };
 };

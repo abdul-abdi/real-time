@@ -11,7 +11,7 @@ export const NotionConfig = () => {
   const [projectsDatabaseId, setProjectsDatabaseId] = useState("");
   const [statusDatabaseId, setStatusDatabaseId] = useState("");
   const [updatesDatabaseId, setUpdatesDatabaseId] = useState("");
-  const { configureNotion, isConfigured, isConfiguring } = useNotion();
+  const { configureNotion, isConfigured, isConfiguring, isUsingFallbackData } = useNotion();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,14 +21,18 @@ export const NotionConfig = () => {
   };
 
   // This component is no longer shown by default since we've hardcoded credentials
-  if (isConfigured) {
+  if (isConfigured && !isUsingFallbackData) {
     return null;
   }
 
   return (
     <Card className="p-6 max-w-md mx-auto mt-8">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <h2 className="text-lg font-semibold mb-4">Configure Notion Integration</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          {isUsingFallbackData 
+            ? "Reconnect to Notion" 
+            : "Configure Notion Integration"}
+        </h2>
         
         <div className="space-y-2">
           <label htmlFor="apiKey" className="text-sm font-medium">
@@ -94,7 +98,7 @@ export const NotionConfig = () => {
               Connecting...
             </>
           ) : (
-            "Connect to Notion"
+            isUsingFallbackData ? "Reconnect to Notion" : "Connect to Notion"
           )}
         </Button>
       </form>

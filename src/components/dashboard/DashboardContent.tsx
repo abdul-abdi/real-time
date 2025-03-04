@@ -7,7 +7,8 @@ import { ProjectsGrid } from "@/components/dashboard/ProjectsGrid";
 import { NotionConfig } from "@/components/notion/NotionConfig";
 import { Project } from "@/types/project";
 import { useNotion } from "@/hooks/useNotion";
-import { Loader } from "lucide-react";
+import { Loader, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DashboardContentProps {
   filteredProjects: Project[];
@@ -41,7 +42,7 @@ export const DashboardContent = ({
   sortBy,
   selectedDepartments,
 }: DashboardContentProps) => {
-  const { isConfigured, isLoading } = useNotion();
+  const { isConfigured, isLoading, isUsingFallbackData } = useNotion();
 
   return (
     <>
@@ -68,15 +69,30 @@ export const DashboardContent = ({
         {isConfigured && isLoading && (
           <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
             <Loader className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-lg text-muted-foreground">Loading projects from Notion...</p>
+            <p className="text-lg text-muted-foreground">Loading projects...</p>
           </div>
         )}
 
         {isConfigured && !isLoading && (
           <>
+            {isUsingFallbackData && (
+              <Alert variant="warning" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Could not connect to Notion API. Showing demo data instead. 
+                  <button 
+                    className="text-primary hover:underline ml-2"
+                    onClick={() => window.location.reload()}
+                  >
+                    Try again
+                  </button>
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="mb-8">
               <h2 className="text-3xl font-bold tracking-tight mb-6 animate-fade-in">
-                Project Overview
+                Project Overview {isUsingFallbackData && "(Demo Data)"}
               </h2>
               
               <StatsOverview {...metrics} />

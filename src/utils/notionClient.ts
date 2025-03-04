@@ -52,6 +52,9 @@ class NotionClient {
     console.log(`Making Notion API request to: ${url}`);
     
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -60,8 +63,10 @@ class NotionClient {
           'Notion-Version': '2022-06-28',
           'Content-Type': 'application/json',
         },
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       console.log(`Notion API response status: ${response.status}`);
       
       if (!response.ok) {
@@ -70,6 +75,8 @@ class NotionClient {
         
         if (response.status === 401) {
           throw new Error("Invalid Notion API key");
+        } else if (response.status === 404) {
+          throw new Error(`Invalid database ID: ${endpoint.split('/')[2]}`);
         }
         throw new Error(`Notion API Error: ${errorData.message}`);
       }
@@ -77,6 +84,15 @@ class NotionClient {
       return response.json();
     } catch (error) {
       console.error("Fetch error:", error);
+      
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error("Notion API request timed out");
+      }
+      
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        throw new Error("Failed to fetch: Network error or CORS issue");
+      }
+      
       throw error;
     }
   }
@@ -93,7 +109,6 @@ class NotionClient {
         if (error.message === "Invalid Notion API key") {
           throw error;
         }
-        // If it's not an API key error, it's likely a database ID issue
         throw new Error(`Invalid database ID: ${databaseId}`);
       }
       throw error;
@@ -115,7 +130,6 @@ class NotionClient {
         if (error.message === "Invalid Notion API key") {
           throw error;
         }
-        // If it's not an API key error, it's likely a database ID issue
         throw new Error(`Invalid database ID: ${databaseId}`);
       }
       throw error;
